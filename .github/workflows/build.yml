@@ -257,30 +257,24 @@ jobs:
           CODE_NAME="shusky"
           DEFCONFIG_PATH="../private/devices/google/${CODE_NAME}/${CODE_NAME}_defconfig"
 
-          echo "Adding configuration settings to gki_defconfig..."
+          echo "Adding configuration settings to defconfig..."
           
-          # Добавляем в файл gki_defconfig конфигурации KernelSU.
+          # Добавляем в файл defconfig конфигурации KernelSU.
           
-          # Add KSU configuration settings
-          echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_KPROBES_HOOK=n" >> "${DEFCONFIG_PATH}"
-                    
-          # Add additional tmpfs config setting
-          echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_TMPFS_XATTR=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_TCP_CONG_BBR=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_NET_SCH_FQ=y" >> "$DEFCONFIG_PATH"
 
-          # Add additional config setting
-          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "${DEFCONFIG_PATH}"
-
-          # Add BBR Config
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${DEFCONFIG_PATH}" 
-          echo "CONFIG_TCP_CONG_BBR=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_NET_SCH_FQ=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_TCP_CONG_BIC=n" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_TCP_CONG_WESTWOOD=n" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_TCP_CONG_HTCP=n" >> "${DEFCONFIG_PATH}" 
+          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "$DEFCONFIG_PATH"
+          echo "# CONFIG_TCP_CONG_BIC is not set" >> "$DEFCONFIG_PATH"
+          echo "# CONFIG_TCP_CONG_WESTWOOD is not set" >> "$DEFCONFIG_PATH"
+          echo "# CONFIG_TCP_CONG_HTCP is not set" >> "$DEFCONFIG_PATH"
 
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
@@ -291,7 +285,9 @@ jobs:
           CODE_NAME="shusky"
           DEFCONFIG_PATH="../private/devices/google/${CODE_NAME}/${CODE_NAME}_defconfig"
 
-          # Добавляем в файл gki_defconfig конфигурации SUSFS.
+          echo "Adding configuration settings to defconfig..."
+          
+          # Добавляем в файл defconfig конфигурации SUSFS.
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
@@ -299,7 +295,6 @@ jobs:
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
@@ -307,7 +302,9 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "${DEFCONFIG_PATH}"
+
+          echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
 
       - name: Change Kernel Name
         working-directory: kernel_source
