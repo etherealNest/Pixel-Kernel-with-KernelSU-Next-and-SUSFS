@@ -2,13 +2,12 @@ name: build kernel
 
 on:
   workflow_dispatch:
-
-inputs:
-  make_release:
-    description: 'Create a GitHub Release?'
-    required: true
-    type: boolean
-    default: false
+    inputs:
+      make_release:
+        description: 'Create a GitHub Release?'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: write
