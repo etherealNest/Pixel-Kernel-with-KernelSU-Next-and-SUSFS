@@ -261,20 +261,20 @@ jobs:
           
           # Добавляем в файл defconfig конфигурации KernelSU.
           
-          echo "CONFIG_KSU=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_TMPFS_XATTR=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_TCP_CONG_BBR=y" >> "$DEFCONFIG_PATH"
-          echo "CONFIG_NET_SCH_FQ=y" >> "$DEFCONFIG_PATH"
+          echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TCP_CONG_BBR=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_NET_SCH_FQ=y" >> "${DEFCONFIG_PATH}"
 
-          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "$DEFCONFIG_PATH"
-          echo "# CONFIG_TCP_CONG_BIC is not set" >> "$DEFCONFIG_PATH"
-          echo "# CONFIG_TCP_CONG_WESTWOOD is not set" >> "$DEFCONFIG_PATH"
-          echo "# CONFIG_TCP_CONG_HTCP is not set" >> "$DEFCONFIG_PATH"
+          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_TCP_CONG_BIC is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_TCP_CONG_WESTWOOD is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_TCP_CONG_HTCP is not set" >> "${DEFCONFIG_PATH}"
 
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
@@ -286,7 +286,7 @@ jobs:
           DEFCONFIG_PATH="../private/devices/google/${CODE_NAME}/${CODE_NAME}_defconfig"
 
           echo "Adding configuration settings to defconfig..."
-          
+
           # Добавляем в файл defconfig конфигурации SUSFS.
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
