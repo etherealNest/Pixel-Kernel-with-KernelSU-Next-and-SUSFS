@@ -78,29 +78,29 @@ jobs:
 
           rm -rf Magisk*.apk magisk_unzip
           
-#      - name: Download offical firmware for geting stock .img
-#        run: |
-#          set -e
-#
-#          DOWN_URL="https://dl.google.com/dl/android/aosp/"
-#          DOWN_BRANCH="husky-bp2a.250705.008-factory-2790a053.zip"
-#          # Для Pixel 8 и 8 Pro boot.img и vendor_kernel_boot.img одинаковые.
-#          MKBOOTIMG_DIR="FilesForImg"
-#
-#          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
-#          echo "Stock firmware downloaded"
-#
-#          mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
-#          unzip -o ${DOWN_BRANCH} -d firmware
-#          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
-#          unzip -o "$INNER_ZIP" -d firmware/imgs
-#
-#          cp \
-#            "firmware/imgs/boot.img" \
-#            "firmware/imgs/vendor_kernel_boot.img" \
-#            "${MKBOOTIMG_DIR}/assets"
-#          echo "Requested stock .img copied"
-#          rm -rf firmware
+      - name: Download offical firmware for geting stock .img
+        run: |
+          set -e
+
+          DOWN_URL="https://dl.google.com/dl/android/aosp/"
+          DOWN_BRANCH="husky-bp2a.250705.008-factory-2790a053.zip"
+          # Для Pixel 8 и 8 Pro boot.img и vendor_kernel_boot.img одинаковые.
+          MKBOOTIMG_DIR="FilesForImg"
+
+          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
+          echo "Stock firmware downloaded"
+
+          mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
+          unzip -o ${DOWN_BRANCH} -d firmware
+          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
+          unzip -o "$INNER_ZIP" -d firmware/imgs
+
+          cp \
+            "firmware/imgs/boot.img" \
+            "firmware/imgs/vendor_kernel_boot.img" \
+            "${MKBOOTIMG_DIR}/assets"
+          echo "Requested stock .img copied"
+          rm -rf firmware
 
       - name: Check Disk Space Before Sync
         run: |
@@ -175,7 +175,7 @@ jobs:
           
           # Копируются патчи из ранее скачнаного репозитория SUSFS.
           cp ../../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./
-          patch -p1 --forward --fuzz=3 < 50_add_susfs_in_gki-android14-6.1.patch
+          patch -p1 --forward < 50_add_susfs_in_gki-android14-6.1.patch
           cp ../../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
           
@@ -185,38 +185,38 @@ jobs:
 
           # Для начала применяю самый основной патч, он ожидаемо должен завершиться с ошибкой.
           cp ../../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-          patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
+          patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
 
           # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
           echo "STARTED fix for apk_sign.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_apk_sign.c.patch
+          patch -p1 --forward < fix_apk_sign.c.patch
           
           echo "STARTED fix for core_hook.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
+          patch -p1 --forward < fix_core_hook.c.patch
           
           echo "STARTED fix for selinux.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_selinux.c.patch
+          patch -p1 --forward < fix_selinux.c.patch
           
           echo "STARTED fix for ksud.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_ksud.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_ksud.c.patch
+          patch -p1 --forward < fix_ksud.c.patch
 
           echo "STARTED fix for rules.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_rules.c.patch
+          patch -p1 --forward < fix_rules.c.patch
 
           echo "STARTED fix for sucompat.c"
           #Новый патч
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_sucompat.c.patch
+          patch -p1 --forward < fix_sucompat.c.patch
           
           echo "STARTED fix for kernel_compat.c"
           #Новый патч
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_kernel_compat.c.patch
+          patch -p1 --forward < fix_kernel_compat.c.patch
 
       - name: Get KernelSU Version
         working-directory: kernel_source/aosp/KernelSU-Next
