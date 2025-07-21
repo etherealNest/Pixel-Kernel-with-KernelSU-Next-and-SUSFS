@@ -26,18 +26,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Maximize Build Space
-        uses: AdityaGarg8/remove-unwanted-software@v5
-        with:
-          remove-dotnet: 'true'          # Frees ~2 GB
-          remove-android: 'true'         # Frees ~9 GB
-          remove-haskell: 'true'         # Frees ~5.2 GB
-          remove-codeql: 'true'          # Frees ~5.4 GB
-          remove-docker-images: 'true'   # Frees ~3.2 GB
-          remove-large-packages: 'true'  # Frees ~3.1 GB
-          remove-swapfile: 'true'        # Frees ~4 GB
-          remove-cached-tools: 'false'   # Avoid unless confirmed safe
-          verbose: 'true'                # Enable detailed logging
+#      - name: Maximize Build Space
+#        uses: AdityaGarg8/remove-unwanted-software@v5
+#        with:
+#          remove-dotnet: 'true'          # Frees ~2 GB
+#          remove-android: 'true'         # Frees ~9 GB
+#          remove-haskell: 'true'         # Frees ~5.2 GB
+#          remove-codeql: 'true'          # Frees ~5.4 GB
+#          remove-docker-images: 'true'   # Frees ~3.2 GB
+#          remove-large-packages: 'true'  # Frees ~3.1 GB
+#          remove-swapfile: 'true'        # Frees ~4 GB
+#          remove-cached-tools: 'false'   # Avoid unless confirmed safe
+#          verbose: 'true'                # Enable detailed logging
 
       - name: Install Build Dependencies
         run: sudo apt-get update && sudo apt-get install -y wget unzip jq
@@ -78,29 +78,29 @@ jobs:
 
           rm -rf Magisk*.apk magisk_unzip
           
-      - name: Download offical firmware for geting stock .img
-        run: |
-          set -e
-
-          DOWN_URL="https://dl.google.com/dl/android/aosp/"
-          DOWN_BRANCH="husky-bp2a.250705.008-factory-2790a053.zip"
-          # Для Pixel 8 и 8 Pro boot.img и vendor_kernel_boot.img одинаковые.
-          MKBOOTIMG_DIR="FilesForImg"
-
-          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
-          echo "Stock firmware downloaded"
-
-          mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
-          unzip -o ${DOWN_BRANCH} -d firmware
-          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
-          unzip -o "$INNER_ZIP" -d firmware/imgs
-
-          cp \
-            "firmware/imgs/boot.img" \
-            "firmware/imgs/vendor_kernel_boot.img" \
-            "${MKBOOTIMG_DIR}/assets"
-          echo "Requested stock .img copied"
-          rm -rf firmware
+#      - name: Download offical firmware for geting stock .img
+#        run: |
+#          set -e
+#
+#          DOWN_URL="https://dl.google.com/dl/android/aosp/"
+#          DOWN_BRANCH="husky-bp2a.250705.008-factory-2790a053.zip"
+#          # Для Pixel 8 и 8 Pro boot.img и vendor_kernel_boot.img одинаковые.
+#          MKBOOTIMG_DIR="FilesForImg"
+#
+#          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
+#          echo "Stock firmware downloaded"
+#
+#          mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
+#          unzip -o ${DOWN_BRANCH} -d firmware
+#          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
+#          unzip -o "$INNER_ZIP" -d firmware/imgs
+#
+#          cp \
+#            "firmware/imgs/boot.img" \
+#            "firmware/imgs/vendor_kernel_boot.img" \
+#            "${MKBOOTIMG_DIR}/assets"
+#          echo "Requested stock .img copied"
+#          rm -rf firmware
 
       - name: Check Disk Space Before Sync
         run: |
@@ -142,7 +142,7 @@ jobs:
               exit 1
           fi
 
-          patch -p1 --forward --fuzz=3 -d "$TARGET_DIR" < "$PATCH_FILE"
+          patch -p1 --forward -d "$TARGET_DIR" < "$PATCH_FILE"
 
           # Очень важно, если не отключить на этом этапе ABI в дальнейшей сборке перестанут работать некоторые драйвера.
           sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' ./kernel_source/aosp/BUILD.bazel
@@ -188,25 +188,32 @@ jobs:
           patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
 
           # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
+          echo "STARTED fix for apk_sign.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_apk_sign.c.patch
           
+          echo "STARTED fix for core_hook.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
           
+          echo "STARTED fix for selinux.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_selinux.c.patch
           
+          echo "STARTED fix for ksud.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_ksud.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_ksud.c.patch
 
+          echo "STARTED fix for rules.c"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_rules.c.patch
 
+          echo "STARTED fix for sucompat.c"
           #Новый патч
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_sucompat.c.patch
           
+          echo "STARTED fix for kernel_compat.c"
           #Новый патч
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
           patch -p1 --forward --fuzz=3 < fix_kernel_compat.c.patch
