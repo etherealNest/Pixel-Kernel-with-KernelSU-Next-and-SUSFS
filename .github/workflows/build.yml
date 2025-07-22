@@ -82,8 +82,8 @@ jobs:
         run: |
           set -e
 
-          DOWN_URL="https://dl.google.com/dl/android/aosp/"
-          DOWN_BRANCH="husky-bp2a.250705.008-factory-2790a053.zip"
+          DOWN_URL="https://dl.google.com/developers/android/baklava/images/factory/"
+          DOWN_BRANCH="husky_beta-bp22.250325.007-factory-b25bdff8.zip"
           # Для Pixel 8 и 8 Pro boot.img и vendor_kernel_boot.img одинаковые.
           MKBOOTIMG_DIR="FilesForImg"
 
@@ -111,7 +111,7 @@ jobs:
         run: |
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
-          MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
+          MANIFEST_BRANCH="android-gs-shusky-6.1-android16-beta"
           
           # Создаю рабочую директорию
           mkdir -p "$KERNEL_DIR"
