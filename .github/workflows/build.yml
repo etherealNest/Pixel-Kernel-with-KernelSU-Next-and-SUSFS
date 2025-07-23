@@ -102,6 +102,14 @@ jobs:
           echo "Requested stock .img copied"
           rm -rf firmware
 
+      - name: Start VS Code if fail build
+        uses: fawazahmed0/action-debug-vscode@main
+        with:
+          port: 8080
+          folder: ${{ github.workspace }}
+          # (опционально) токен
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Check Disk Space Before Sync
         run: |
           echo "Disk space before kernel source sync:"
