@@ -56,52 +56,6 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android14-6.1"
           git clone https://github.com/WildPlusKernel/kernel_patches.git
 
-      - name: Getting magiskboot tool
-        run: |
-          set -e
-
-          MKBOOTIMG_DIR="FilesForImg"
-
-          mkdir -p "${MKBOOTIMG_DIR}/tools" "magisk_unzip"
-
-          curl -s https://api.github.com/repos/topjohnwu/Magisk/releases \
-            | jq -r '.[0].assets[] 
-                      | select(.name | test("^Magisk.*\\.apk$")) 
-                      | .browser_download_url' \
-            | xargs -n1 wget -q
-
-          unzip -q -o Magisk*.apk -d magisk_unzip
-          cp magisk_unzip/lib/x86_64/libmagiskboot.so ${MKBOOTIMG_DIR}/tools/magiskboot
-          chmod 775 ${MKBOOTIMG_DIR}/tools/magiskboot
-          ls -l ${MKBOOTIMG_DIR}/tools
-          echo "Lust version magiskboot successfully downloaded, redy to use"
-
-          rm -rf Magisk*.apk magisk_unzip
-          
-      - name: Download offical firmware for geting stock .img
-        run: |
-          set -e
-
-          DOWN_URL="https://dl.google.com/developers/android/baklava/images/factory/"
-          DOWN_BRANCH="shiba_beta-bp31.250610.004-factory-f0823b4d.zip"
-          # Для Pixel 8 и 8 Pro boot.img и vendor_kernel_boot.img одинаковые.
-          MKBOOTIMG_DIR="FilesForImg"
-
-          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
-          echo "Stock firmware downloaded"
-
-          mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
-          unzip -o ${DOWN_BRANCH} -d firmware
-          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
-          unzip -o "$INNER_ZIP" -d firmware/imgs
-
-          cp \
-            "firmware/imgs/boot.img" \
-            "firmware/imgs/vendor_kernel_boot.img" \
-            "${MKBOOTIMG_DIR}/assets"
-          echo "Requested stock .img copied"
-          rm -rf firmware
-
       - name: Check Disk Space Before Sync
         run: |
           echo "Disk space before kernel source sync:"
