@@ -102,14 +102,6 @@ jobs:
           echo "Requested stock .img copied"
           rm -rf firmware
 
-      - name: Start VS Code if fail build
-        uses: fawazahmed0/action-debug-vscode@main
-        with:
-          port: 8080
-          folder: ${{ github.workspace }}
-          # (опционально) токен
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Check Disk Space Before Sync
         run: |
           echo "Disk space before kernel source sync:"
@@ -331,6 +323,14 @@ jobs:
 
           sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER_NUM}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
           sed -i 's/build-timestamp = $(or $(KBUILD_BUILD_TIMESTAMP), $(build-timestamp-auto))/build-timestamp = "Sun Jul 20 16:00:00 UTC 2025"/' ./aosp/init/Makefile
+
+      - name: Start VS Code
+        uses: fawazahmed0/action-debug-vscode@main
+        with:
+          port: 8080
+          folder: ${{ github.workspace }}
+          # (опционально) токен
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Kernel
         working-directory: kernel_source
