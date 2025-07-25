@@ -435,6 +435,15 @@ jobs:
 
           echo "---> Build finished successfully. <---"
 
+      - name: Compress Image Files with Gzip
+        run: |
+          echo "Compressing .img files..."
+          gzip -9 boot_*.img
+          gzip -9 vendor_kernel_boot_*.img
+          
+          echo "Compression complete. Listing final files:"
+          ls -lh *.zip *.gz
+
       - name: Upload AnyKernel ZIP Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -445,13 +454,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: boot-image
-          path: boot_*.img
+          path: boot_*.img.gz
 
       - name: Upload vendor_kernel_boot.img Artifact
         uses: actions/upload-artifact@v4
         with:
           name: vendor-kernel-boot-image
-          path: vendor_kernel_boot_*.img
+          path: vendor_kernel_boot_*.img.gz
 
       - name: Start VS Code if fail build
         if: failure()      
