@@ -61,7 +61,7 @@ jobs:
         run: |
           set -e
           # ===> Получаем утилиту magiskboot напрямую из последней версии apk.
-          # ===> Она нам нужно чтобы в будущем подменить файлы из стоковых .img на наши скомпилированные.
+          # ===> Она нам нужна чтобы в будущем подменить файлы из стоковых .img на наши скомпилированные.
           MKBOOTIMG_DIR="FilesForImg"
 
           mkdir -p "${MKBOOTIMG_DIR}/tools" "magisk_unzip"
@@ -246,8 +246,8 @@ jobs:
         run: |
           echo "Forcing KSU Driver Version to ${KSUVER_NUM} in Makefile..."
 
-          # Нужно вручную подменить номер версии, это лишь визуальная часть.
-          # Во время сборки bazel он выполняет всё в песочнице и Makefile попросту не видит папки .git для подсчёта версии.
+          # ===> Нужно вручную подменить номер версии, это лишь визуальная часть.
+          # ===> Во время сборки bazel он выполняет всё в песочнице и Makefile попросту не видит папки .git для подсчёта версии.
           sed -i "s/ccflags-y += -DKSU_VERSION=11998/ccflags-y += -DKSU_VERSION=${KSUVER_NUM}/" Makefile
 
           echo "Makefile patched successfully."
@@ -468,7 +468,6 @@ jobs:
         with:
           port: 8080
           folder: ${{ github.workspace }}
-          # (опционально) токен
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   create-release:
