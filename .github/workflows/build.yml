@@ -339,7 +339,6 @@ jobs:
 #          sed -i 's/build-timestamp = $(or $(KBUILD_BUILD_TIMESTAMP), $(build-timestamp-auto))/build-timestamp = "Sun Jul 20 16:00:00 UTC 2025"/' ./aosp/init/Makefile
 
       - name: Start VS Code if fail build
-        if: failure()      
         uses: fawazahmed0/action-debug-vscode@main
         with:
           port: 8080
