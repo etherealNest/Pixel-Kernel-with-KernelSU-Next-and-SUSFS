@@ -497,7 +497,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         env:
-          KSUVER_NUM: ${{ env.TIMEBUILD }}
+          TIMESTAMP: ${{ env.TIMEBUILD }}
         with:
           tag_name: ${{ steps.release_vars.outputs.tag }}
           name: "KernelSU Next ${{ steps.release_vars.outputs.ksu_ver }} + SUSFS for Pixel 8/8 Pro"
@@ -508,7 +508,7 @@ jobs:
             - Based on the pure stock Google kernel.
             - Supports both AnyKernel3 ZIP installation and direct .img flashing via fastboot.
             
-            ${KSUVER_NUM}
+            ${TIMESTAMP}
             **Built transparently via GitHub Actions.**
           files: release-assets/**/*
           prerelease: false
