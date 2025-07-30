@@ -334,16 +334,12 @@ jobs:
           # ===> Удаляем надпись dirty из наименования ядра.
           sed -i "s/echo -n -dirty/echo -n \"\"/g" build/kernel/kleaf/workspace_status_stamp.py
 
+          TIMESTAMP=$(date -u +'\"%a %b %d %T %Z %Y\"')
+          echo "TIMEBUILD=$TIMESTAMP" >> $GITHUB_ENV
+
           # ===> Добавляем свою метку в название ядра. 
           sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER_NUM}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
-#          sed -i 's/build-timestamp = $(or $(KBUILD_BUILD_TIMESTAMP), $(build-timestamp-auto))/build-timestamp = "Sun Jul 20 16:00:00 UTC 2025"/' ./aosp/init/Makefile
-
-      - name: Start VS Code if fail build
-        uses: fawazahmed0/action-debug-vscode@main
-        with:
-          port: 8080
-          folder: ${{ github.workspace }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          sed -i "s/build-timestamp = \$(or \$(KBUILD_BUILD_TIMESTAMP), \$(build-timestamp-auto))/build-timestamp = ${TIMESTAMP}/" ./aosp/init/Makefile
 
       - name: Build Kernel
         working-directory: kernel_source
@@ -500,6 +496,8 @@ jobs:
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        env:
+          KSUVER_NUM: ${{ env.TIMEBUILD }}
         with:
           tag_name: ${{ steps.release_vars.outputs.tag }}
           name: "KernelSU Next ${{ steps.release_vars.outputs.ksu_ver }} + SUSFS for Pixel 8/8 Pro"
@@ -510,6 +508,7 @@ jobs:
             - Based on the pure stock Google kernel.
             - Supports both AnyKernel3 ZIP installation and direct .img flashing via fastboot.
             
+            ${KSUVER_NUM}
             **Built transparently via GitHub Actions.**
           files: release-assets/**/*
-          prerelease: true
+          prerelease: false
