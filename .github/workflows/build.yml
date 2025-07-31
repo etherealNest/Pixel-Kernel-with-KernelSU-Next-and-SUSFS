@@ -334,9 +334,12 @@ jobs:
           # ===> Удаляем надпись dirty из наименования ядра.
           sed -i "s/echo -n -dirty/echo -n \"\"/g" build/kernel/kleaf/workspace_status_stamp.py
 
+          TIMESTAMP=$(date -u +'\"%a %b %d %T %Z %Y\"')
+          echo "TIMEBUILD=$TIMESTAMP" >> $GITHUB_ENV
+
           # ===> Добавляем свою метку в название ядра. 
           sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER_NUM}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
-#          sed -i 's/build-timestamp = $(or $(KBUILD_BUILD_TIMESTAMP), $(build-timestamp-auto))/build-timestamp = "Sun Jul 20 16:00:00 UTC 2025"/' ./aosp/init/Makefile
+          sed -i "s/build-timestamp = \$(or \$(KBUILD_BUILD_TIMESTAMP), \$(build-timestamp-auto))/build-timestamp = ${TIMESTAMP}/" ./aosp/init/Makefile
 
       - name: Build Kernel
         working-directory: kernel_source
