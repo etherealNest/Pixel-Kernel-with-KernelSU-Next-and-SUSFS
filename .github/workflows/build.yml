@@ -332,7 +332,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
 
           #Добавлено недавно
-          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
           #Добавлено недавно
 
           # echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
