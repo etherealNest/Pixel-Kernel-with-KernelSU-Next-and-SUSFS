@@ -290,6 +290,14 @@ jobs:
           echo "CONFIG_TCP_CONG_BBR=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_NET_SCH_FQ=y" >> "${DEFCONFIG_PATH}"
 
+          #Добавлено недавно
+          echo "CONFIG_KSU_LSM_SECURITY_HOOKS=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_OVERLAY_FS=y" >> "${DEFCONFIG_PATH}"
+          
+          echo "# CONFIG_KSU_DEBUG is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_ALLOWLIST_WORKAROUND is not set" >> "${DEFCONFIG_PATH}"
+          #Добавлено недавно
+
           echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
           echo "# CONFIG_TCP_CONG_BIC is not set" >> "${DEFCONFIG_PATH}"
           echo "# CONFIG_TCP_CONG_WESTWOOD is not set" >> "${DEFCONFIG_PATH}"
@@ -323,7 +331,11 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
 
-          echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
+          #Добавлено недавно
+          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
+          #Добавлено недавно
+
+          # echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
           echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
 
       - name: Change Kernel Name
@@ -504,7 +516,7 @@ jobs:
             - KernelSU Next version: ${{ steps.release_vars.outputs.ksu_ver }}
             - SUSFS version: 1.5.9
             - Based on the pure stock Google kernel.
-            - Supports both AnyKernel3 ZIP installation and direct .img flashing via fastboot.
+            - Supports both AnyKernel3 ZIP installation and direct .img flashing via fastboot (.img compress in .gz).
             
             **Built transparently via GitHub Actions.**
           files: release-assets/**/*
