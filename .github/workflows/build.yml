@@ -87,7 +87,7 @@ jobs:
           # ===> Нужно не забывать менять ссылку.
 
           DOWN_URL="https://dl.google.com/dl/android/aosp/"
-          DOWN_BRANCH="husky-bp2a.250705.008-factory-2790a053.zip"
+          DOWN_BRANCH="shiba-bp2a.250805.005-factory-664c3f2d.zip"
           # ===> Похуй что выбирать, shiba или husky = boot.img и vendor_kernel_boot.img у них одинаковые.
           MKBOOTIMG_DIR="FilesForImg"
 
