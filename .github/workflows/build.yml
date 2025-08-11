@@ -521,4 +521,4 @@ jobs:
             
             **Built transparently via GitHub Actions.**
           files: release-assets/**/*
-          prerelease: true
+          prerelease: false
