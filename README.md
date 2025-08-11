@@ -7,7 +7,7 @@ This project provides a pure stock kernel for the Pixel 8 and 8 Pro, integrated 
 - Only for Pixel 8 (Shiba) and Pixel 8 Pro (husky)
 - Only for stable Android 16
 ### Features
-- KernelSU Next version: 12812
+- KernelSU Next actual version
 - SUSFS version: 1.5.9
 - Based on the pure stock Google kernel.
 - Supports both AnyKernel3 ZIP installation and direct .img flashing via fastboot.
