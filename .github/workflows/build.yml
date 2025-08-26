@@ -201,9 +201,10 @@ jobs:
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
           patch -p1 --forward < fix_core_hook.c.patch
           
-          echo "---> STARTED fix for selinux.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
-          patch -p1 --forward < fix_selinux.c.patch
+          echo "---> SKIPPING selinux.c patch"
+          # echo "---> STARTED fix for selinux.c <---"
+          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
+          # patch -p1 --forward < fix_selinux.c.patch
           
           echo "---> STARTED fix for ksud.c <---"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_ksud.c.patch ./
