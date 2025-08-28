@@ -209,6 +209,10 @@ jobs:
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
           patch -p1 --forward < fix_sucompat.c.patch
 
+          echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
+          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+          patch -p1 --forward < fix_kernel_compat.c.patch
+
       - name: Get KernelSU Version
         working-directory: kernel_source/aosp/KernelSU-Next
         run: |
