@@ -55,7 +55,7 @@ jobs:
           # ===> Клонирую репозиторий с патчами, susfs и AK3. 
           git clone https://github.com/etherealNest/AnyKernel3 -b "stock-zuma"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android14-6.1"
-          git clone https://github.com/WildPlusKernel/kernel_patches.git
+          git clone https://github.com/etherealNest/kernel_patches.git
 
       - name: Getting magiskboot tool
         run: |
@@ -200,15 +200,6 @@ jobs:
           echo "---> STARTED fix for core_hook.c <---"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
           patch -p1 --forward < fix_core_hook.c.patch
-          
-          # echo "---> SKIPPING selinux.c patch"
-          # echo "---> STARTED fix for selinux.c <---"
-          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
-          # patch -p1 --forward < fix_selinux.c.patch
-          # 
-          # echo "---> STARTED fix for ksud.c <---"
-          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_ksud.c.patch ./
-          # patch -p1 --forward < fix_ksud.c.patch
 
           echo "---> STARTED fix for rules.c <---"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
@@ -217,11 +208,6 @@ jobs:
           echo "---> STARTED fix for sucompat.c <---"
           cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
           patch -p1 --forward < fix_sucompat.c.patch
-          
-#          echo "---> STARTED fix for kernel_compat.c <---"
-#          #Новый патч
-#          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-#          patch -p1 --forward < fix_kernel_compat.c.patch
 
       - name: Get KernelSU Version
         working-directory: kernel_source/aosp/KernelSU-Next
