@@ -249,7 +249,7 @@ jobs:
           # ===> Ещё один патч.
 
           cp ../../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
-          patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
+          patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
 
       - name: Apply Hide Stuff Patches
         working-directory: kernel_source/aosp
@@ -257,7 +257,7 @@ jobs:
           cp ../../kernel_patches/69_hide_stuff.patch ./
           # ===> Ещё один патч.
 
-          patch -p1 -F 3 < 69_hide_stuff.patch
+          patch -p1 --forward -F 3 < 69_hide_stuff.patch
 
       - name: Add Configuration Settings
         working-directory: kernel_source/aosp
