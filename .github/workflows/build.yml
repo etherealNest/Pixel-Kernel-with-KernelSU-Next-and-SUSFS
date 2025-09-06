@@ -17,36 +17,32 @@ jobs:
   build-pixel-kernel:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    env:
-      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
-      CCACHE_NOHASHDIR: "true"
-      CCACHE_HARDLINK: "true"
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Maximize Build Space
-        uses: AdityaGarg8/remove-unwanted-software@v5
-        with:
-          remove-dotnet: 'true'          # Frees ~2 GB
-          remove-android: 'true'         # Frees ~9 GB
-          remove-haskell: 'true'         # Frees ~5.2 GB
-          remove-codeql: 'true'          # Frees ~5.4 GB
-          remove-docker-images: 'true'   # Frees ~3.2 GB
-          remove-large-packages: 'true'  # Frees ~3.1 GB
-          remove-swapfile: 'true'        # Frees ~4 GB
-          remove-cached-tools: 'false'   # Avoid unless confirmed safe
-          verbose: 'true'                # Enable detailed logging
+#      - name: Maximize Build Space
+#        uses: AdityaGarg8/remove-unwanted-software@v5
+#        with:
+#          remove-dotnet: 'true'          # Frees ~2 GB
+#          remove-android: 'true'         # Frees ~9 GB
+#          remove-haskell: 'true'         # Frees ~5.2 GB
+#          remove-codeql: 'true'          # Frees ~5.4 GB
+#          remove-docker-images: 'true'   # Frees ~3.2 GB
+#          remove-large-packages: 'true'  # Frees ~3.1 GB
+#          remove-swapfile: 'true'        # Frees ~4 GB
+#          remove-cached-tools: 'false'   # Avoid unless confirmed safe
+#          verbose: 'true'                # Enable detailed logging
 
       - name: Install Build Dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget unzip jq
+        run: sudo apt-get update && sudo apt-get install -y wget unzip jq libelf-dev libssl-dev build-essential
 
       - name: Install Repo
         run: |
           mkdir -p .bin
           curl https://storage.googleapis.com/git-repo-downloads/repo > .bin/repo
-          chmod a+x .bin/repo
+          chmod a+rx .bin/repo
           echo "$GITHUB_WORKSPACE/.bin" >> $GITHUB_PATH
 
       - name: Clone AnyKernel3, KernelPatches and SUSFS
@@ -88,7 +84,7 @@ jobs:
 
           DOWN_URL="https://dl.google.com/dl/android/aosp/"
           DOWN_BRANCH="shiba-bp3a.250905.014-factory-f927be20.zip"
-          # ===> Похуй что выбирать, shiba или husky = boot.img и vendor_kernel_boot.img у них одинаковые.
+          # ===> Не имеет значения что выбирать, shiba или husky, так как boot.img и vendor_kernel_boot.img у них одинаковые.
           MKBOOTIMG_DIR="FilesForImg"
 
           wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
@@ -138,7 +134,7 @@ jobs:
         run: |
           set -e
 
-          # ===> Супер важная часть если мы хотим успешно собрать ядро.
+          # ===> Супер-важная часть если мы хотим успешно собрать ядро.
           # ===> Патч я собрал конкретно под данное устройство. Для других устройств нужно адаптировать.
 
           echo "Applying build system patch..."
@@ -190,28 +186,24 @@ jobs:
           # ===> Для начала применяю самый основной патч, он ожидаемо должен завершиться с ошибкой.
           echo "---> Apply main patch <---"
           cp ../../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-          patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+          patch -p1 --forward < 10_enable_susfs_for_ksu.patch # || true
 
-          # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
-          echo "---> STARTED fix for apk_sign.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-          patch -p1 --forward < fix_apk_sign.c.patch
-          
-          echo "---> STARTED fix for core_hook.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-          patch -p1 --forward < fix_core_hook.c.patch
-
-          echo "---> STARTED fix for rules.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
-          patch -p1 --forward < fix_rules.c.patch
-
-          echo "---> STARTED fix for sucompat.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-          patch -p1 --forward < fix_sucompat.c.patch
-
-          echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-          patch -p1 --forward < fix_kernel_compat.c.patch
+          # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.        
+          #echo "---> STARTED fix for core_hook.c <---"
+          #cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+          #patch -p1 --forward < fix_core_hook.c.patch
+          #
+          #echo "---> STARTED fix for rules.c <---"
+          #cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
+          #patch -p1 --forward < fix_rules.c.patch
+          #
+          #echo "---> STARTED fix for sucompat.c <---"
+          #cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+          #patch -p1 --forward < fix_sucompat.c.patch
+          #
+          #echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
+          #cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+          #patch -p1 --forward < fix_kernel_compat.c.patch
 
       - name: Get KernelSU Version
         working-directory: kernel_source/aosp/KernelSU-Next
@@ -265,33 +257,45 @@ jobs:
           CODE_NAME="shusky"
           DEFCONFIG_PATH="../private/devices/google/${CODE_NAME}/${CODE_NAME}_defconfig"
 
-          # ===> Добавляем конфиги в defconfig устройства, чтобы при сборке было понятно что включать в ядро, а что нет.
+          # ===> Добавляем конфиги в defconfig устройства.
           echo "Adding configuration settings to defconfig..."
-          
-          # Добавляем в файл defconfig конфигурации KernelSU.
-          
+                    
+          # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
+          
+          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
+                    
+          # Add additional tmpfs config setting
           echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_TMPFS_POSIX_ACL=y" >> "${DEFCONFIG_PATH}"
+
+          # Add additional config setting
           echo "CONFIG_IP_NF_TARGET_TTL=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP6_NF_TARGET_HL=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP6_NF_MATCH_HL=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${DEFCONFIG_PATH}"
+
+          # Add BBR Config
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${DEFCONFIG_PATH}" 
           echo "CONFIG_TCP_CONG_BBR=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_NET_SCH_FQ=y" >> "${DEFCONFIG_PATH}"
-
-          #Добавлено недавно
-          echo "CONFIG_KSU_LSM_SECURITY_HOOKS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_OVERLAY_FS=y" >> "${DEFCONFIG_PATH}"
-          
-          echo "# CONFIG_KSU_DEBUG is not set" >> "${DEFCONFIG_PATH}"
-          echo "# CONFIG_KSU_ALLOWLIST_WORKAROUND is not set" >> "${DEFCONFIG_PATH}"
-          #Добавлено недавно
-
-          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
           echo "# CONFIG_TCP_CONG_BIC is not set" >> "${DEFCONFIG_PATH}"
           echo "# CONFIG_TCP_CONG_WESTWOOD is not set" >> "${DEFCONFIG_PATH}"
-          echo "# CONFIG_TCP_CONG_HTCP is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_TCP_CONG_HTCP is not set" >> "${DEFCONFIG_PATH}" 
+
+          # === ipset support ===
+          echo "CONFIG_IP_SET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_MAX=256" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_IP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_PORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETNET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
 
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
@@ -305,7 +309,7 @@ jobs:
           # ===> Добавляем конфиги в defconfig устройства, чтобы при сборке было понятно что включать в ядро, а что нет.
           echo "Adding configuration settings to defconfig..."
 
-          # Добавляем в файл defconfig конфигурации SUSFS.
+          # Add SUSFS configuration settings
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
@@ -313,6 +317,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
@@ -321,11 +326,6 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
 
-          #Добавлено недавно
-          echo "CONFIG_THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
-          #Добавлено недавно
-
-          # echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
           echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
 
       - name: Change Kernel Name
