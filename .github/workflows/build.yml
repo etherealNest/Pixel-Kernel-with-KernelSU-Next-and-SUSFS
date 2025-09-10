@@ -113,7 +113,7 @@ jobs:
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
           MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
-          TARGET_KERNEL_REVISION="android14-6.1.134_r00"
+          TARGET_KERNEL_TAG="android14-6.1.134_r00"
 
           rm -rf "$KERNEL_DIR"
           mkdir -p "$KERNEL_DIR"
@@ -121,11 +121,11 @@ jobs:
 
           repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
 
-          echo "Overriding kernel/common revision to $TARGET_KERNEL_REVISION"
-          sed -i "s|path=\"aosp\" name=\"kernel/common\"|path=\"aosp\" name=\"kernel/common\" revision=\"$TARGET_KERNEL_REVISION\"|g" .repo/manifests/default.xml
-
+          echo "Overriding kernel/common revision to tag $TARGET_KERNEL_TAG"
+          sed -i "s|path=\"aosp\" name=\"kernel/common\"|path=\"aosp\" name=\"kernel/common\" revision=\"refs/tags/$TARGET_KERNEL_TAG\"|g" .repo/manifests/default.xml
+      
           echo "Syncing repositories with modified manifest..."
-          repo sync -c -j$(nproc --all) --fail-fast
+          repo sync -c -j$(nproc --all) --fail-fast --no-tags
 
       - name: Verify Kernel Version
         run: |
