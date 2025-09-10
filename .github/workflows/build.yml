@@ -112,23 +112,27 @@ jobs:
         run: |
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
-          MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
-          
+          MANIFEST_BRANCH="android-gs-shusky-6.1-android16-beta"
+
           rm -rf "$KERNEL_DIR"
           mkdir -p "$KERNEL_DIR"
           cd "$KERNEL_DIR"
-          
-          repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
-          
-          if ! git ls-remote --exit-code --heads "$MANIFEST_URL" "refs/heads/$MANIFEST_BRANCH" &>/dev/null; then
-            sed -i "s|\"refs/heads/${MANIFEST_BRANCH}\"|\"refs/heads/deprecated/${MANIFEST_BRANCH}\"|g" .repo/manifests/default.xml
-          fi
-          
+
+          # Возвращаем --depth=1 для быстрой и экономной начальной синхронизации
+          repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
+
+          # ... (блок проверки на deprecated) ...
+
           repo sync -c -j$(nproc --all) --fail-fast
 
-      - name: Apply Kernel Version Update
+      - name: Deepen Kernel Repo and Apply Update
         run: |
           cd kernel_source/aosp
+          
+          echo "Un-shallowing the kernel repository to get full history..."
+          git fetch --unshallow
+          
+          echo "Applying merge commit for kernel update..."
           git cherry-pick a4fc1bef05011a82d092806b03e9c113b2c55eaa
           
           echo "Verifying kernel version after update:"
