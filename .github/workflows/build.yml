@@ -113,7 +113,7 @@ jobs:
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
           MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
-          TARGET_KERNEL_TAG="android14-6.1.134_r00"
+          TARGET_KERNEL_TAG="android14-6.1-2025-05_r8"
 
           rm -rf "$KERNEL_DIR"
           mkdir -p "$KERNEL_DIR"
