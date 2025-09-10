@@ -112,30 +112,25 @@ jobs:
         run: |
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
-          MANIFEST_BRANCH="android-gs-shusky-6.1-android16-beta"
+          MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
+          TARGET_KERNEL_REVISION="android14-6.1.134_r00"
 
           rm -rf "$KERNEL_DIR"
           mkdir -p "$KERNEL_DIR"
           cd "$KERNEL_DIR"
 
-          # Возвращаем --depth=1 для быстрой и экономной начальной синхронизации
           repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
 
-          # ... (блок проверки на deprecated) ...
+          echo "Overriding kernel/common revision to $TARGET_KERNEL_REVISION"
+          sed -i "s|path=\"aosp\" name=\"kernel/common\"|path=\"aosp\" name=\"kernel/common\" revision=\"$TARGET_KERNEL_REVISION\"|g" .repo/manifests/default.xml
 
+          echo "Syncing repositories with modified manifest..."
           repo sync -c -j$(nproc --all) --fail-fast
 
-      - name: Deepen Kernel Repo and Apply Update
+      - name: Verify Kernel Version
         run: |
           cd kernel_source/aosp
-          
-          echo "Un-shallowing the kernel repository to get full history..."
-          git fetch --unshallow
-          
-          echo "Applying merge commit for kernel update..."
-          git cherry-pick a4fc1bef05011a82d092806b03e9c113b2c55eaa
-          
-          echo "Verifying kernel version after update:"
+          echo "Verifying kernel version after sync:"
           grep -E '^(SUBLEVEL)' Makefile
 #      - name: Initialize and Sync Kernel Source
 #        run: |
