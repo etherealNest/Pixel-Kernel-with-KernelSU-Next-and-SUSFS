@@ -76,31 +76,31 @@ jobs:
 
           rm -rf Magisk*.apk magisk_unzip
           
-      - name: Download offical firmware for geting stock .img
-        run: |
-          set -e
-          # ===> Собственно скачиваем стоковую прошивку для того чтобы взять стоковые .img.
-          # ===> Нужно не забывать менять ссылку.
-
-          DOWN_URL="https://dl.google.com/dl/android/aosp/"
-          DOWN_BRANCH="shiba-bp3a.250905.014-factory-f927be20.zip"
-          # ===> Не имеет значения что выбирать, shiba или husky, так как boot.img и vendor_kernel_boot.img у них одинаковые.
-          MKBOOTIMG_DIR="FilesForImg"
-
-          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
-          echo "Stock firmware downloaded"
-
-          mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
-          unzip -o ${DOWN_BRANCH} -d firmware
-          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
-          unzip -o "$INNER_ZIP" -d firmware/imgs
-
-          cp \
-            "firmware/imgs/boot.img" \
-            "firmware/imgs/vendor_kernel_boot.img" \
-            "${MKBOOTIMG_DIR}/assets"
-          echo "Requested stock .img copied"
-          rm -rf firmware
+#      - name: Download offical firmware for geting stock .img
+#        run: |
+#          set -e
+#          # ===> Собственно скачиваем стоковую прошивку для того чтобы взять стоковые .img.
+#          # ===> Нужно не забывать менять ссылку.
+#
+#          DOWN_URL="https://dl.google.com/dl/android/aosp/"
+#          DOWN_BRANCH="shiba-bp3a.250905.014-factory-f927be20.zip"
+#          # ===> Не имеет значения что выбирать, shiba или husky, так как boot.img и vendor_kernel_boot.img у них одинаковые.
+#          MKBOOTIMG_DIR="FilesForImg"
+#
+#          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
+#          echo "Stock firmware downloaded"
+#
+#          mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
+#          unzip -o ${DOWN_BRANCH} -d firmware
+#          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
+#          unzip -o "$INNER_ZIP" -d firmware/imgs
+#
+#          cp \
+#            "firmware/imgs/boot.img" \
+#            "firmware/imgs/vendor_kernel_boot.img" \
+#            "${MKBOOTIMG_DIR}/assets"
+#          echo "Requested stock .img copied"
+#          rm -rf firmware
 
       - name: Check Disk Space Before Sync
         run: |
@@ -112,7 +112,7 @@ jobs:
         run: |
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
-          MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
+          MANIFEST_BRANCH="android-gs-shusky-6.1-android16-beta"
           
           mkdir -p "$KERNEL_DIR"
           cd "$KERNEL_DIR"
