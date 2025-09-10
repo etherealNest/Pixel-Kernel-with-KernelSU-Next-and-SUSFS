@@ -154,29 +154,29 @@ jobs:
 #          echo "Syncing kernel source..."
 #          repo sync -c -j$(nproc --all) --no-tags --fail-fast
 
-#      - name: Apply Build System Patch
-#        run: |
-#          set -e
-#
-#          # ===> Супер-важная часть если мы хотим успешно собрать ядро.
-#          # ===> Патч я собрал конкретно под данное устройство. Для других устройств нужно адаптировать.
-#
-#          echo "Applying build system patch..."
-#          PATCH_FILE=".github/workflows/Patches/fix_BUILD.bazel.patch"
-#          TARGET_DIR="kernel_source/private/devices/google/shusky"
-#          
-#          if [ ! -f "$PATCH_FILE" ]; then
-#              echo "ERROR: Patch file not found at ${PATCH_FILE}!"
-#              exit 1
-#          fi
-#
-#          patch -p1 --forward -d "$TARGET_DIR" < "$PATCH_FILE"
-#
-#          # ===> Очень важно, если не отключить на этом этапе ABI в дальнейшей сборке перестанут работать некоторые драйвера.
-#          sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' ./kernel_source/aosp/BUILD.bazel
-#          rm -rf ./kernel_source/aosp/android/abi_gki_protected_exports_*
-#
-#          echo "Build system patch applied successfully."
+      - name: Apply Build System Patch
+        run: |
+          set -e
+
+          # ===> Супер-важная часть если мы хотим успешно собрать ядро.
+          # ===> Патч я собрал конкретно под данное устройство. Для других устройств нужно адаптировать.
+
+          echo "Applying build system patch..."
+          PATCH_FILE=".github/workflows/Patches/fix_BUILD.bazel.patch"
+          TARGET_DIR="kernel_source/private/devices/google/shusky"
+          
+          if [ ! -f "$PATCH_FILE" ]; then
+              echo "ERROR: Patch file not found at ${PATCH_FILE}!"
+              exit 1
+          fi
+
+          patch -p1 --forward -d "$TARGET_DIR" < "$PATCH_FILE"
+
+          # ===> Очень важно, если не отключить на этом этапе ABI в дальнейшей сборке перестанут работать некоторые драйвера.
+          sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' ./kernel_source/aosp/BUILD.bazel
+          rm -rf ./kernel_source/aosp/android/abi_gki_protected_exports_*
+
+          echo "Build system patch applied successfully."
 
       - name: Add KernelSU
         working-directory: kernel_source/aosp
