@@ -112,7 +112,7 @@ jobs:
         run: |
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
-          MANIFEST_BRANCH="android-gs-shusky-6.1-android16-beta"
+          MANIFEST_BRANCH="common-android14-6.1-2025-05"
           
           mkdir -p "$KERNEL_DIR"
           cd "$KERNEL_DIR"
