@@ -114,21 +114,46 @@ jobs:
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
           MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
           
+          rm -rf "$KERNEL_DIR"
           mkdir -p "$KERNEL_DIR"
           cd "$KERNEL_DIR"
           
-          echo "Initializing repo for branch: $MANIFEST_BRANCH"
-          repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
+          repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
           
-          # ===> Проверка на случай, если ветка была переименована в 'deprecated'
-          # ===> Использует --exit-code для более надежной проверки, чем анализ текста
           if ! git ls-remote --exit-code --heads "$MANIFEST_URL" "refs/heads/$MANIFEST_BRANCH" &>/dev/null; then
-            echo "Branch '$MANIFEST_BRANCH' not found. Attempting to use 'deprecated/$MANIFEST_BRANCH'."
             sed -i "s|\"refs/heads/${MANIFEST_BRANCH}\"|\"refs/heads/deprecated/${MANIFEST_BRANCH}\"|g" .repo/manifests/default.xml
           fi
           
-          echo "Syncing kernel source..."
-          repo sync -c -j$(nproc --all) --no-tags --fail-fast
+          repo sync -c -j$(nproc --all) --fail-fast
+
+      - name: Apply Kernel Version Update
+        run: |
+          cd kernel_source/aosp
+          git cherry-pick a4fc1bef05011a82d092806b03e9c113b2c55eaa
+          
+          echo "Verifying kernel version after update:"
+          grep -E '^(SUBLEVEL)' Makefile
+#      - name: Initialize and Sync Kernel Source
+#        run: |
+#          KERNEL_DIR="kernel_source"
+#          MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
+#          MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
+#          
+#          mkdir -p "$KERNEL_DIR"
+#          cd "$KERNEL_DIR"
+#          
+#          echo "Initializing repo for branch: $MANIFEST_BRANCH"
+#          repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
+#          
+#          # ===> Проверка на случай, если ветка была переименована в 'deprecated'
+#          # ===> Использует --exit-code для более надежной проверки, чем анализ текста
+#          if ! git ls-remote --exit-code --heads "$MANIFEST_URL" "refs/heads/$MANIFEST_BRANCH" &>/dev/null; then
+#            echo "Branch '$MANIFEST_BRANCH' not found. Attempting to use 'deprecated/$MANIFEST_BRANCH'."
+#            sed -i "s|\"refs/heads/${MANIFEST_BRANCH}\"|\"refs/heads/deprecated/${MANIFEST_BRANCH}\"|g" .repo/manifests/default.xml
+#          fi
+#          
+#          echo "Syncing kernel source..."
+#          repo sync -c -j$(nproc --all) --no-tags --fail-fast
 
 #      - name: Apply Build System Patch
 #        run: |
