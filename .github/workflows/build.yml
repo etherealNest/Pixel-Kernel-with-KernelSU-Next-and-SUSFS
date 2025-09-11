@@ -206,28 +206,24 @@ jobs:
           # ===> Для начала применяю самый основной патч, он ожидаемо должен завершиться с ошибкой.
           echo "---> Apply main patch <---"
           cp ../../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-          patch -p1 --forward < 10_enable_susfs_for_ksu.patch # || true
+          patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
 
-          # # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
-          # echo "---> STARTED fix for apk_sign.c <---"
-          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-          # patch -p1 --forward < fix_apk_sign.c.patch
-          # 
-          # echo "---> STARTED fix for core_hook.c <---"
-          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-          # patch -p1 --forward < fix_core_hook.c.patch
-          # 
-          # echo "---> STARTED fix for rules.c <---"
-          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
-          # patch -p1 --forward < fix_rules.c.patch
-          # 
-          # echo "---> STARTED fix for sucompat.c <---"
-          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-          # patch -p1 --forward < fix_sucompat.c.patch
-          # 
-          # echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
-          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-          # patch -p1 --forward < fix_kernel_compat.c.patch
+          # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
+          echo "---> STARTED fix for apk_sign.c <---"
+          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
+          patch -p1 --forward < fix_apk_sign.c.patch
+          
+          echo "---> STARTED fix for core_hook.c <---"
+          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+          patch -p1 --forward < fix_core_hook.c.patch
+          
+          echo "---> STARTED fix for sucompat.c <---"
+          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+          patch -p1 --forward < fix_sucompat.c.patch
+          
+          echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
+          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+          patch -p1 --forward < fix_kernel_compat.c.patch
 
       - name: Get KernelSU Version
         working-directory: kernel_source/aosp/KernelSU-Next
