@@ -283,7 +283,10 @@ jobs:
           # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
           
-          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_KPROBES_HOOK=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KPROBES=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_HAVE_KPROBES=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KPROBE_EVENTS=y" >> "${DEFCONFIG_PATH}"
                     
           # Add additional tmpfs config setting
           echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
