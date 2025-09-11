@@ -91,9 +91,9 @@ jobs:
           echo "Stock firmware downloaded"
 
           mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
-          unzip -o ${DOWN_BRANCH} -d firmware
+          unzip -o ${DOWN_BRANCH} '*.zip' -d firmware
           INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
-          unzip -o "$INNER_ZIP" -d firmware/imgs
+          unzip -o "$INNER_ZIP" 'boot.img' 'vendor_kernel_boot.img' -d firmware/imgs
 
           cp \
             "firmware/imgs/boot.img" \
@@ -361,14 +361,6 @@ jobs:
           # ===> Добавляем свою метку в название ядра. 
           sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER_NUM}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
           sed -i "s/build-timestamp = \$(or \$(KBUILD_BUILD_TIMESTAMP), \$(build-timestamp-auto))/build-timestamp = ${TIMESTAMP}/" ./aosp/init/Makefile
-
-      - name: Start VS Code if fail build
-        if: always()      
-        uses: fawazahmed0/action-debug-vscode@main
-        with:
-          port: 8080
-          folder: ${{ github.workspace }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Kernel
         working-directory: kernel_source
