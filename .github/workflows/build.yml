@@ -132,6 +132,7 @@ jobs:
           cd kernel_source/aosp
           echo "Verifying kernel version after sync:"
           grep -E '^(SUBLEVEL)' Makefile
+
 #      - name: Initialize and Sync Kernel Source
 #        run: |
 #          KERNEL_DIR="kernel_source"
@@ -164,11 +165,6 @@ jobs:
           echo "Applying build system patch..."
           PATCH_FILE=".github/workflows/Patches/fix_BUILD.bazel.patch"
           TARGET_DIR="kernel_source/private/devices/google/shusky"
-          
-          if [ ! -f "$PATCH_FILE" ]; then
-              echo "ERROR: Patch file not found at ${PATCH_FILE}!"
-              exit 1
-          fi
 
           patch -p1 --forward -d "$TARGET_DIR" < "$PATCH_FILE"
 
@@ -191,47 +187,47 @@ jobs:
           echo "[+] Running setup script..."
           bash ./KernelSU-Next/kernel/setup.sh next
 
-#      - name: Apply SUSFS Patches
-#        working-directory: kernel_source/aosp
-#        run: |          
-#          echo "Applying SUSFS patches..."
-#          
-#          # ===> Тут будет у нас применяться susfs.
-#          # ===> Эта часть должна пройти без проблем.
-#          cp ../../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./
-#          patch -p1 --forward < 50_add_susfs_in_gki-android14-6.1.patch
-#          cp ../../susfs4ksu/kernel_patches/fs/* ./fs/
-#          cp ../../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
-#          
-#          echo "Applying SUSFS patches for KernelSU Next..."
-#          # ===> Тут будет интегрировать сам susfs с KernelSU Next
-#          cd ./KernelSU-Next
-#
-#          # ===> Для начала применяю самый основной патч, он ожидаемо должен завершиться с ошибкой.
-#          echo "---> Apply main patch <---"
-#          cp ../../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-#          patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-#
-#          # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
-#          echo "---> STARTED fix for apk_sign.c <---"
-#          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-#          patch -p1 --forward < fix_apk_sign.c.patch
-#          
-#          echo "---> STARTED fix for core_hook.c <---"
-#          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-#          patch -p1 --forward < fix_core_hook.c.patch
-#          
-#          echo "---> STARTED fix for rules.c <---"
-#          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
-#          patch -p1 --forward < fix_rules.c.patch
-#          
-#          echo "---> STARTED fix for sucompat.c <---"
-#          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-#          patch -p1 --forward < fix_sucompat.c.patch
-#          
-#          echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
-#          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-#          patch -p1 --forward < fix_kernel_compat.c.patch
+      - name: Apply SUSFS Patches
+        working-directory: kernel_source/aosp
+        run: |          
+          echo "Applying SUSFS patches..."
+          
+          # ===> Тут будет у нас применяться susfs.
+          # ===> Эта часть должна пройти без проблем.
+          cp ../../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./
+          patch -p1 --forward < 50_add_susfs_in_gki-android14-6.1.patch
+          cp ../../susfs4ksu/kernel_patches/fs/* ./fs/
+          cp ../../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
+          
+          echo "Applying SUSFS patches for KernelSU Next..."
+          # ===> Тут будет интегрировать сам susfs с KernelSU Next
+          cd ./KernelSU-Next
+
+          # ===> Для начала применяю самый основной патч, он ожидаемо должен завершиться с ошибкой.
+          echo "---> Apply main patch <---"
+          cp ../../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+          patch -p1 --forward < 10_enable_susfs_for_ksu.patch # || true
+
+          # # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
+          # echo "---> STARTED fix for apk_sign.c <---"
+          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
+          # patch -p1 --forward < fix_apk_sign.c.patch
+          # 
+          # echo "---> STARTED fix for core_hook.c <---"
+          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+          # patch -p1 --forward < fix_core_hook.c.patch
+          # 
+          # echo "---> STARTED fix for rules.c <---"
+          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
+          # patch -p1 --forward < fix_rules.c.patch
+          # 
+          # echo "---> STARTED fix for sucompat.c <---"
+          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+          # patch -p1 --forward < fix_sucompat.c.patch
+          # 
+          # echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
+          # cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+          # patch -p1 --forward < fix_kernel_compat.c.patch
 
       - name: Get KernelSU Version
         working-directory: kernel_source/aosp/KernelSU-Next
@@ -325,36 +321,30 @@ jobs:
           echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
 
+          # ===> SUSFS Configs <===
+          echo "Adding configuration settings to defconfig..."
+
+          # Add SUSFS configuration settings
+          echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
+
+          echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
+
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
-
-#      - name: Add SUSFS Configuration Settings
-#        working-directory: kernel_source/aosp
-#        run: |
-#          CODE_NAME="shusky"
-#          DEFCONFIG_PATH="../private/devices/google/${CODE_NAME}/${CODE_NAME}_defconfig"
-#
-#          # ===> Добавляем конфиги в defconfig устройства, чтобы при сборке было понятно что включать в ядро, а что нет.
-#          echo "Adding configuration settings to defconfig..."
-#
-#          # Add SUSFS configuration settings
-#          echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
-#          echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
-#          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
-#
-#          echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
 
       - name: Change Kernel Name
         working-directory: kernel_source
@@ -383,7 +373,6 @@ jobs:
       - name: Build Kernel
         working-directory: kernel_source
         run: |
-          # ===> Всё сделано, запускаем сборку.
           ./build_shusky.sh --kernel_package=@//aosp
 
       - name: Prepare Artifacts for Packaging
