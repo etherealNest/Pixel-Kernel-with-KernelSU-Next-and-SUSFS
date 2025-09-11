@@ -482,7 +482,7 @@ jobs:
           path: vendor_kernel_boot_*.img.gz
 
       - name: Start VS Code if fail build
-        if: always()      
+        if: failure()      
         uses: fawazahmed0/action-debug-vscode@main
         with:
           port: 8080
