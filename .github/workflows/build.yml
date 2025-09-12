@@ -1,14 +1,30 @@
 name: build kernel
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      make_release:
-        description: 'Create a GitHub Release?'
+      device:
+        required: true
+        type: string
+      ksu_type:
+        required: true
+        type: string
+      susfs:
         required: true
         type: boolean
-        default: false
-
+      make_release:
+        required: true
+        type: boolean
+      stock_ota:
+        required: true
+        type: string
+      pixel-source-branch:
+        required: true
+        type: string
+      aosp-spoofing:
+        required: false
+        type: string
+      
 permissions:
   contents: write
   actions: write 
@@ -49,7 +65,7 @@ jobs:
         run: |
           echo "Cloning AnyKernel3 and other dependencies..."
           # ===> Клонирую репозиторий с патчами, susfs и AK3. 
-          git clone https://github.com/etherealNest/AnyKernel3 -b "stock-zuma"
+          git clone https://github.com/etherealNest/AnyKernel3 -b "${{ inputs.device }}"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android14-6.1"
           git clone https://github.com/etherealNest/kernel_patches.git
 
@@ -83,15 +99,14 @@ jobs:
           # ===> Нужно не забывать менять ссылку.
 
           DOWN_URL="https://dl.google.com/dl/android/aosp/"
-          DOWN_BRANCH="shiba-bp3a.250905.014-factory-f927be20.zip"
           # ===> Не имеет значения что выбирать, shiba или husky, так как boot.img и vendor_kernel_boot.img у них одинаковые.
           MKBOOTIMG_DIR="FilesForImg"
 
-          wget --progress=dot:mega "${DOWN_URL}${DOWN_BRANCH}"
+          wget --progress=dot:mega "${DOWN_URL}${{ inputs.stock_ota }}"
           echo "Stock firmware downloaded"
 
           mkdir -p "firmware/imgs" "${MKBOOTIMG_DIR}/assets"
-          unzip -o ${DOWN_BRANCH} '*.zip' -d firmware
+          unzip -o "${{ inputs.stock_ota }}" '*.zip' -d firmware
           INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
           unzip -o "$INNER_ZIP" 'boot.img' 'vendor_kernel_boot.img' -d firmware/imgs
 
@@ -112,18 +127,20 @@ jobs:
         run: |
           KERNEL_DIR="kernel_source"
           MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
-          MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
-          TARGET_KERNEL_TAG="android14-6.1-2025-05_r8"
 
           rm -rf "$KERNEL_DIR"
           mkdir -p "$KERNEL_DIR"
           cd "$KERNEL_DIR"
 
-          repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
+          repo init --depth=1 -u "$MANIFEST_URL" -b "${{ inputs.pixel-source-branch }}"
 
-          echo "Overriding kernel/common revision to tag $TARGET_KERNEL_TAG"
-          sed -i "s|path=\"aosp\" name=\"kernel/common\"|path=\"aosp\" name=\"kernel/common\" revision=\"refs/tags/$TARGET_KERNEL_TAG\"|g" .repo/manifests/default.xml
-      
+          if [ -n "${{ inputs.aosp-spoofing }}" ]; then
+            echo "Overriding kernel/common revision to tag "${{ inputs.aosp-spoofing }}""
+            sed -i "s|path=\"aosp\" name=\"kernel/common\"|path=\"aosp\" name=\"kernel/common\" revision=\"refs/tags/$TARGET_KERNEL_TAG\"|g" .repo/manifests/default.xml
+          else
+            echo "No AOSP spoofing input provided, using default manifest settings."
+          fi
+
           echo "Syncing repositories with modified manifest..."
           repo sync -c -j$(nproc --all) --fail-fast --no-tags
 
@@ -132,28 +149,6 @@ jobs:
           cd kernel_source/aosp
           echo "Verifying kernel version after sync:"
           grep -E '^(SUBLEVEL)' Makefile
-
-#      - name: Initialize and Sync Kernel Source
-#        run: |
-#          KERNEL_DIR="kernel_source"
-#          MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
-#          MANIFEST_BRANCH="android-gs-shusky-6.1-android16"
-#          
-#          mkdir -p "$KERNEL_DIR"
-#          cd "$KERNEL_DIR"
-#          
-#          echo "Initializing repo for branch: $MANIFEST_BRANCH"
-#          repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
-#          
-#          # ===> Проверка на случай, если ветка была переименована в 'deprecated'
-#          # ===> Использует --exit-code для более надежной проверки, чем анализ текста
-#          if ! git ls-remote --exit-code --heads "$MANIFEST_URL" "refs/heads/$MANIFEST_BRANCH" &>/dev/null; then
-#            echo "Branch '$MANIFEST_BRANCH' not found. Attempting to use 'deprecated/$MANIFEST_BRANCH'."
-#            sed -i "s|\"refs/heads/${MANIFEST_BRANCH}\"|\"refs/heads/deprecated/${MANIFEST_BRANCH}\"|g" .repo/manifests/default.xml
-#          fi
-#          
-#          echo "Syncing kernel source..."
-#          repo sync -c -j$(nproc --all) --no-tags --fail-fast
 
       - name: Apply Build System Patch
         run: |
@@ -164,7 +159,7 @@ jobs:
 
           echo "Applying build system patch..."
           PATCH_FILE=".github/workflows/Patches/fix_BUILD.bazel.patch"
-          TARGET_DIR="kernel_source/private/devices/google/shusky"
+          TARGET_DIR="kernel_source/private/devices/google/"${{ inputs.device }}""
 
           patch -p1 --forward -d "$TARGET_DIR" < "$PATCH_FILE"
 
@@ -178,16 +173,16 @@ jobs:
         working-directory: kernel_source/aosp
         run: |
           set -e
-          # ===> Клонируем и интегрируем актуальную версию KernelSU Next. 
-          echo "Adding KernelSU Next"
           
-          echo "[+] Cloning KernelSU-Next repository..."
-          git clone https://github.com/KernelSU-Next/KernelSU-Next.git -b next KernelSU-Next
-
-          echo "[+] Running setup script..."
-          bash ./KernelSU-Next/kernel/setup.sh next
+          if [ "${{ inputs.ksu_type}} " == "ksu-next" ]; then
+            echo "Adding KernelSU Next"
+            curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
+          else
+            echo "No valid KernelSU type specified, skipping KernelSU integration."
+          fi
 
       - name: Apply SUSFS Patches
+        if: ${{ inputs.susfs == true }}
         working-directory: kernel_source/aosp
         run: |          
           echo "Applying SUSFS patches..."
@@ -274,8 +269,7 @@ jobs:
       - name: Add Configuration Settings
         working-directory: kernel_source/aosp
         run: |
-          CODE_NAME="shusky"
-          DEFCONFIG_PATH="../private/devices/google/${CODE_NAME}/${CODE_NAME}_defconfig"
+          DEFCONFIG_PATH="../private/devices/google/"${{ inputs.device }}"/"${{ inputs.device }}"_defconfig"
 
           # ===> Добавляем конфиги в defconfig устройства.
           echo "Adding configuration settings to defconfig..."
@@ -321,27 +315,29 @@ jobs:
           echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
 
-          # ===> SUSFS Configs <===
-          echo "Adding configuration settings to defconfig..."
+          if [ "${{ inputs.susfs }}" = true ]; then
+            # ===> SUSFS Configs <===
+            echo "Adding configuration settings to defconfig..."
 
-          # Add SUSFS configuration settings
-          echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
-          echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
+            # Add SUSFS configuration settings
+            echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
+            echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
 
-          echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
+            echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
+          fi
 
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
@@ -359,7 +355,7 @@ jobs:
           echo "TIMEBUILD=$TIMESTAMP" >> $GITHUB_ENV
 
           # ===> Добавляем свою метку в название ядра. 
-          sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER_NUM}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
+          # sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER_NUM}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
           sed -i "s/build-timestamp = \$(or \$(KBUILD_BUILD_TIMESTAMP), \$(build-timestamp-auto))/build-timestamp = ${TIMESTAMP}/" ./aosp/init/Makefile
 
       - name: Build Kernel

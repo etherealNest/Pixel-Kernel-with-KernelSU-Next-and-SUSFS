@@ -1,0 +1,62 @@
+name: Build and Release Kernels
+permissions:
+  contents: write
+  actions: write
+ 
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: 'Device codename'
+        required: true
+        type: string
+        default: 'shusky'
+      ksu_type:
+        description: 'KernelSU type'
+        required: true
+        type: choice
+        options:
+          - ksu-next
+        default: 'ksu-next'
+      susfs:
+        description: 'Enable SUSFS?'
+        required: true
+        type: boolean
+        default: true
+      make_release:
+        description: 'Create a GitHub Release?'
+        required: true
+        type: boolean
+        default: false
+      stock_ota:
+        description: 'Stock Full OTA'
+        required: true
+        type: choice
+        options:
+          - shiba-bp3a.250905.014-factory-f927be20.zip
+        default: shiba-bp3a.250905.014-factory-f927be20.zip
+      pixel-source-branch:
+        description: 'Pixel Source Branch'
+        required: true
+        type: choice
+        options:
+          - android-gs-shusky-6.1-android16
+          - android-gs-shusky-6.1-android16-beta
+        default: android-gs-shusky-6.1-android16
+      aosp-spoofing:
+        description: 'Enable AOSP Spoofing?'
+        required: false
+        type: string
+        default: android14-6.1-2025-05_r8
+
+jobs:
+  build-kernel:
+    uses: ./.github/workflows/build-kernel.yml
+    with:
+      device: ${{ github.event.inputs.device }}
+      ksu_type: ${{ github.event.inputs.ksu_type }}
+      susfs: ${{ github.event.inputs.susfs }}
+      make_release: ${{ github.event.inputs.make_release }}
+      stock_ota: ${{ github.event.inputs.stock_ota }}
+      pixel-source-branch: ${{ github.event.inputs.pixel-source-branch }}
+      aosp-spoofing: ${{ github.event.inputs.aosp-spoofing }}
