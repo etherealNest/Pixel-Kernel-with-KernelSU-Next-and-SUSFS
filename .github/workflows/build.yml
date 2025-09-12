@@ -254,15 +254,15 @@ jobs:
 
           echo "Makefile patched successfully."
 
-#      - name: Apply Hooks Patches
-#        working-directory: kernel_source/aosp
-#        run: |
-#          echo "Applying hooks for KernelSU-Next..."
-#          # ===> Ещё один патч.
-#
-#          cp ../../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
-#          patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
-#
+      - name: Apply Hooks Patches
+        working-directory: kernel_source/aosp
+        run: |
+          echo "Applying hooks for KernelSU-Next..."
+          # ===> Ещё один патч.
+
+          cp ../../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
+          patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
+
       - name: Apply Hide Stuff Patches
         working-directory: kernel_source/aosp
         run: |
@@ -283,10 +283,11 @@ jobs:
           # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
           
-          echo "CONFIG_KSU_KPROBES_HOOK=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KPROBES=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_HAVE_KPROBES=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KPROBE_EVENTS=y" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_KPROBES_HOOK=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KPROBES=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_HAVE_KPROBES=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KPROBE_EVENTS=y" >> "${DEFCONFIG_PATH}"
                     
           # Add additional tmpfs config setting
           echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
