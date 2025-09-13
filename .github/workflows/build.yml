@@ -420,6 +420,7 @@ jobs:
         working-directory: AnyKernel3
         run: |
           SUSFS_STAT="${{ inputs.susfs == 'true' && '_SUSFS-v1.5.9' || '' }}"
+          echo "SUSFS_STAT=${SUSFS_STAT}" >> $GITHUB_ENV
 
           ZIP_NAME="AK3_${KERNEL_VER}_${{ inputs.device }}_${{ inputs.ksu_type }}-v${KSUVER}${SUSFS_STAT}${{ inputs.hooks_type }}.zip"
           echo "Creating zip file $ZIP_NAME..."
@@ -429,8 +430,6 @@ jobs:
         working-directory: FilesForImg
         run: |
           set -ex
-
-          SUSFS_STAT="${{ inputs.susfs == 'true' && '_SUSFS-v1.5.9' || '' }}"
 
           TOOLS_DIR="tools"
           ASSETS_DIR="assets"
