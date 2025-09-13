@@ -182,7 +182,7 @@ jobs:
           fi
 
       - name: Apply SUSFS Patches
-        if: ${{ inputs.susfs == true }}
+        if: ${{ inputs.susfs == 'true' }}
         working-directory: kernel_source/aosp
         run: |          
           echo "Applying SUSFS patches..."
@@ -315,7 +315,7 @@ jobs:
           echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
 
-          if [ "${{ inputs.susfs }}" = true ]; then
+          if [ "${{ inputs.susfs }}" == "true" ]; then
             # ===> SUSFS Configs <===
             echo "Adding configuration settings to defconfig..."
 
