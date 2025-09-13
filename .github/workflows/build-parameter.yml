@@ -17,6 +17,7 @@ on:
         type: choice
         options:
           - ksu-next
+          - ksu
         default: 'ksu-next'
       susfs:
         description: 'Enable SUSFS?'
