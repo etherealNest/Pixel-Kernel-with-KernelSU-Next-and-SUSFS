@@ -296,73 +296,73 @@ jobs:
           echo "Adding configuration settings to defconfig..."
                     
           # KernelSU Core Configuration
-          echo "CONFIG_KSU=y" >> "${defconfig_path}"
+          echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
 
           if [ "${{ inputs.hooks_type }}" == "kbrobes" ]; then
-            echo "CONFIG_KSU_KPROBES_HOOK=y" >> "${defconfig_path}"
-            echo "CONFIG_KPROBES=y" >> "${defconfig_path}"
-            echo "CONFIG_HAVE_KPROBES=y" >> "${defconfig_path}"
-            echo "CONFIG_KPROBE_EVENTS=y" >> "${defconfig_path}"
+            echo "CONFIG_KSU_KPROBES_HOOK=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KPROBES=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_HAVE_KPROBES=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KPROBE_EVENTS=y" >> "${DEFCONFIG_PATH}"
           elif [ "${{ inputs.hooks_type }}" == "manual" ]; then
-            echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${defconfig_path}"
+            echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
           fi
 
           # Mountify Support
-          echo "CONFIG_TMPFS_XATTR=y" >> "${defconfig_path}"
-          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "${defconfig_path}"
+          echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "${DEFCONFIG_PATH}"
 
           # Networking Configuration
-          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "${defconfig_path}"
-          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "${defconfig_path}"
-          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "${defconfig_path}"
+          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "${DEFCONFIG_PATH}"
 
           # BBR TCP Congestion Control
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${defconfig_path}"
-          echo "CONFIG_TCP_CONG_BBR=y" >> "${defconfig_path}"
-          echo "CONFIG_NET_SCH_FQ=y" >> "${defconfig_path}"
-          echo "# CONFIG_TCP_CONG_BIC is not set" >> "${defconfig_path}"
-          echo "# CONFIG_TCP_CONG_WESTWOOD is not set" >> "${defconfig_path}"
-          echo "# CONFIG_TCP_CONG_HTCP is not set" >> "${defconfig_path}"
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TCP_CONG_BBR=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_NET_SCH_FQ=y" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_TCP_CONG_BIC is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_TCP_CONG_WESTWOOD is not set" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_TCP_CONG_HTCP is not set" >> "${DEFCONFIG_PATH}"
 
           # IPSet support
-          echo "CONFIG_IP_SET=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_MAX=256" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_BITMAP_IP=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_BITMAP_PORT=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_IP=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_IPPORT=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_NET=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_NETNET=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${defconfig_path}"
-          echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${defconfig_path}"
+          echo "CONFIG_IP_SET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_MAX=256" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_IP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_PORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETNET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
 
           if [ "${{ inputs.susfs }}" == "true" ]; then
             # SUSFS Configuration
-            echo "CONFIG_KSU_SUSFS=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${defconfig_path}"
+            echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
             
             # SUSFS Auto Mount Features
-            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${defconfig_path}"
+            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
             
             # SUSFS Advanced Features
-            echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${defconfig_path}"
-            echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${defconfig_path}"
+            echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
+            echo "# CONFIG_KSU_SUSFS_SUS_OVERLAYFS is not set" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
             
             # SUSFS Debugging and Security
-            echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${defconfig_path}"
-            echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${defconfig_path}"
-            echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${defconfig_path}"
+            echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
+            echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
+            echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
           fi
 
           # Удаление проверки defconfig
