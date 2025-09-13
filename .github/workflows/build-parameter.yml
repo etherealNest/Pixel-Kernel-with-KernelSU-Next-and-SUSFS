@@ -56,9 +56,19 @@ on:
           - manual
           - kbrobes
         default: kbrobes
+      run_type:
+        description: 'Run Type'
+        required: true
+        type: choice
+        options:
+          - manual
+          - matrix
+        default: 'manual'
 
 jobs:
-  build-kernel:
+  # Мануальная сборка с пользовательскими параметрами
+  build-kernel-manual:
+    if: github.event.inputs.run_type == 'manual'
     uses: ./.github/workflows/build.yml
     with:
       device: ${{ github.event.inputs.device }}
@@ -69,3 +79,26 @@ jobs:
       pixel-source-branch: ${{ github.event.inputs.pixel-source-branch }}
       aosp-spoofing: ${{ github.event.inputs.aosp-spoofing }}
       hooks_type: ${{ github.event.inputs.hooks_type }}
+
+  # Матричная сборка с комбинированием ksu_type, susfs и hooks_type
+  build-kernel-matrix:
+    if: github.event.inputs.run_type == 'matrix'
+    strategy:
+      matrix:
+        ksu_type: [ksu-next, ksu]
+        susfs: [true, false]
+        hooks_type: [manual, kbrobes]
+        exclude:
+          # Запрещаем комбинацию ksu + manual
+          - ksu_type: ksu
+            hooks_type: manual
+    uses: ./.github/workflows/build.yml
+    with:
+      device: 'shusky'
+      ksu_type: ${{ matrix.ksu_type }}
+      susfs: ${{ matrix.susfs }}
+      debug_module_list: false
+      stock_ota: 'shiba-bp3a.250905.014-factory-f927be20.zip'
+      pixel-source-branch: 'android-gs-shusky-6.1-android16'
+      aosp-spoofing: 'android14-6.1-2025-05_r8'
+      hooks_type: ${{ matrix.hooks_type }}
