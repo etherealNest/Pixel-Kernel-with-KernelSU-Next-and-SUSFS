@@ -273,6 +273,7 @@ jobs:
           echo "Makefile patched successfully."
 
       - name: Apply Hooks Patches
+        if: ${{ inputs.ksu_type == 'ksu-next' && inputs.hooks_type == 'manual' }}
         working-directory: kernel_source/aosp
         run: |
           # Позволяет использовать manual hooks для ядра.
