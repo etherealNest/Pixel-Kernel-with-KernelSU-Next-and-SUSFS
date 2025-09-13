@@ -24,9 +24,9 @@ on:
         required: true
         type: boolean
         default: true
-      make_release:
-        description: 'Create a GitHub Release?'
-        required: true
+      debug_module_list:
+        description: 'Build Debug Module List?'
+        required: false
         type: boolean
         default: false
       stock_ota:
@@ -42,13 +42,20 @@ on:
         type: choice
         options:
           - android-gs-shusky-6.1-android16
-          - android-gs-shusky-6.1-android16-beta
         default: android-gs-shusky-6.1-android16
       aosp-spoofing:
         description: 'Enable AOSP Spoofing?'
         required: false
         type: string
         default: android14-6.1-2025-05_r8
+      hooks_type:
+        description: 'Hooks Type'
+        required: true
+        type: choice
+        options:
+          - manual
+          - kbrobes
+        default: kbrobes
 
 jobs:
   build-kernel:
