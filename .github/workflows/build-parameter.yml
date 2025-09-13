@@ -64,7 +64,8 @@ jobs:
       device: ${{ github.event.inputs.device }}
       ksu_type: ${{ github.event.inputs.ksu_type }}
       susfs: ${{ github.event.inputs.susfs }}
-      make_release: ${{ github.event.inputs.make_release }}
+      debug_module_list: ${{ github.event.inputs.debug_module_list }}
       stock_ota: ${{ github.event.inputs.stock_ota }}
       pixel-source-branch: ${{ github.event.inputs.pixel-source-branch }}
       aosp-spoofing: ${{ github.event.inputs.aosp-spoofing }}
+      hooks_type: ${{ github.event.inputs.hooks_type }}
