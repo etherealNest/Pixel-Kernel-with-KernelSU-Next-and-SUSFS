@@ -290,7 +290,7 @@ jobs:
       - name: Add Configuration Settings
         working-directory: kernel_source/aosp
         run: |
-          DEFCONFIG_PATH="../private/devices/google/"${{ inputs.device }}"/"${{ inputs.device }}"_defconfig"
+          DEFCONFIG_PATH="../private/devices/google/${{ inputs.device }}/${{ inputs.device }}_defconfig"
 
           # Добавляем конфиги в defconfig устройства.
           echo "Adding configuration settings to defconfig..."
@@ -502,10 +502,10 @@ jobs:
           name: vendor-kernel-boot-image
           path: vendor_kernel_boot_*.img.gz
 
-      - name: Start VS Code if fail build
-        if: failure()      
-        uses: fawazahmed0/action-debug-vscode@main
-        with:
-          port: 8080
-          folder: ${{ github.workspace }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Start VS Code if fail build
+#        if: failure()      
+#        uses: fawazahmed0/action-debug-vscode@main
+#        with:
+#          port: 8080
+#          folder: ${{ github.workspace }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
