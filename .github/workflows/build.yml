@@ -298,8 +298,10 @@ jobs:
           # KernelSU Core Configuration
           echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
 
-          if [ "${{ inputs.hooks_type }}" == "kbrobes" ]; then
-            echo "CONFIG_KSU_KPROBES_HOOK=y" >> "${DEFCONFIG_PATH}"
+          if [ "${{ inputs.hooks_type }}" == "kprobes" ]; then
+            if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+              echo "CONFIG_KSU_KPROBES_HOOK=y" >> "${DEFCONFIG_PATH}"
+            fi
             echo "CONFIG_KPROBES=y" >> "${DEFCONFIG_PATH}"
             echo "CONFIG_HAVE_KPROBES=y" >> "${DEFCONFIG_PATH}"
             echo "CONFIG_KPROBE_EVENTS=y" >> "${DEFCONFIG_PATH}"
