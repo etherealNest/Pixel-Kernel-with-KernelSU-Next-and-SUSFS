@@ -135,8 +135,8 @@ jobs:
           repo init --depth=1 -u "$MANIFEST_URL" -b "${{ inputs.pixel-source-branch }}"
 
           if [ -n "${{ inputs.aosp-spoofing }}" ]; then
-            echo "Overriding kernel/common revision to tag "${{ inputs.aosp-spoofing }}""
-            sed -i "s|path=\"aosp\" name=\"kernel/common\"|path=\"aosp\" name=\"kernel/common\" revision=\"refs/tags/$TARGET_KERNEL_TAG\"|g" .repo/manifests/default.xml
+            echo "Overriding kernel/common revision to tag ${{ inputs.aosp-spoofing }}"
+            sed -i "s|path=\"aosp\" name=\"kernel/common\"|path=\"aosp\" name=\"kernel/common\" revision=\"refs/tags/${{ inputs.aosp-spoofing }}\"|g" .repo/manifests/default.xml
           else
             echo "No AOSP spoofing input provided, using default manifest settings."
           fi
