@@ -64,7 +64,7 @@ jobs:
       - name: Clone AnyKernel3, KernelPatches and SUSFS
         run: |
           echo "Cloning AnyKernel3 and other dependencies..."
-          # ===> Клонирую репозиторий с патчами, susfs и AK3. 
+          # Клонирую репозиторий с патчами, susfs и AK3. 
           git clone https://github.com/etherealNest/AnyKernel3 -b "${{ inputs.device }}"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android14-6.1"
           git clone https://github.com/etherealNest/kernel_patches.git
@@ -72,8 +72,9 @@ jobs:
       - name: Getting magiskboot tool
         run: |
           set -e
-          # ===> Получаем утилиту magiskboot напрямую из последней версии apk.
-          # ===> Она нам нужна чтобы в будущем подменить файлы из стоковых .img на наши скомпилированные.
+          # Получаем утилиту magiskboot напрямую из последней версии apk.
+          # Она нам нужна чтобы в будущем из стоковых .img подменить Image.lz4.
+
           MKBOOTIMG_DIR="FilesForImg"
 
           mkdir -p "${MKBOOTIMG_DIR}/tools" "magisk_unzip"
@@ -95,11 +96,9 @@ jobs:
       - name: Download offical firmware for geting stock .img
         run: |
           set -e
-          # ===> Собственно скачиваем стоковую прошивку для того чтобы взять стоковые .img.
-          # ===> Нужно не забывать менять ссылку.
+          # Скчиваем стоковую прошивку для получения стоковых .img.
 
           DOWN_URL="https://dl.google.com/dl/android/aosp/"
-          # ===> Не имеет значения что выбирать, shiba или husky, так как boot.img и vendor_kernel_boot.img у них одинаковые.
           MKBOOTIMG_DIR="FilesForImg"
 
           wget --progress=dot:mega "${DOWN_URL}${{ inputs.stock_ota }}"
@@ -120,7 +119,6 @@ jobs:
       - name: Check Disk Space Before Sync
         run: |
           echo "Disk space before kernel source sync:"
-          # ===> Просто проверяем дисковое пространство перед скачиванием исходников ядра.
           df -h
 
       - name: Initialize and Sync Kernel Source
@@ -141,44 +139,45 @@ jobs:
             echo "No AOSP spoofing input provided, using default manifest settings."
           fi
 
-          echo "Syncing repositories with modified manifest..."
+          echo "Syncing repositories..."
           repo sync -c -j$(nproc --all) --fail-fast --no-tags
 
       - name: Verify Kernel Version
         run: |
           cd kernel_source/aosp
-          echo "Verifying kernel version after sync:"
-          grep -E '^(SUBLEVEL)' Makefile
+          KERNEL_VER=$(sed -n '2,4p' Makefile | grep -oE '[0-9]+' | paste -sd '.')
+          echo "KERNEL_VER=$KERNEL_VER" >> $GITHUB_ENV
+
+          echo "Kernel version detected: ${KERNEL_VER}"
 
       - name: Apply Build System Patch
         run: |
-          set -e
-
-          # ===> Супер-важная часть если мы хотим успешно собрать ядро.
-          # ===> Патч я собрал конкретно под данное устройство. Для других устройств нужно адаптировать.
+          # Патчитм BUILD.bazel чтобы явно заставить систему сборки использовать наши исходники.
+          # Под каждое устройство нужно делать свой патч.
 
           echo "Applying build system patch..."
-          PATCH_FILE=".github/workflows/Patches/fix_BUILD.bazel.patch"
-          TARGET_DIR="kernel_source/private/devices/google/"${{ inputs.device }}""
+          PATCH_FILE=".github/workflows/Patches/fix_${{ inputs.device }}_BUILD.bazel.patch"
+          TARGET_DIR="kernel_source/private/devices/google/${{ inputs.device }}"
 
           patch -p1 --forward -d "$TARGET_DIR" < "$PATCH_FILE"
 
-          # ===> Очень важно, если не отключить на этом этапе ABI в дальнейшей сборке перестанут работать некоторые драйвера.
+          echo "Build system patch applied successfully."
+
+      - name: Disable ABI Protected
+        run: |
+          # Очень важно, если не отключить на этом этапе ABI в дальнейшей сборке перестанут работать некоторые драйвера.
           sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' ./kernel_source/aosp/BUILD.bazel
           rm -rf ./kernel_source/aosp/android/abi_gki_protected_exports_*
-
-          echo "Build system patch applied successfully."
 
       - name: Add KernelSU
         working-directory: kernel_source/aosp
         run: |
-          set -e
-          
           if [ "${{ inputs.ksu_type}}" == "ksu-next" ]; then
             echo "Adding KernelSU Next"
             curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
-          else
-            echo "No valid KernelSU type specified, skipping KernelSU integration."
+          elif [ "${{ inputs.ksu_type}}" == "ksu" ]; then
+            echo "Adding KernelSU"
+            curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
           fi
 
       - name: Apply SUSFS Patches
@@ -187,71 +186,89 @@ jobs:
         run: |          
           echo "Applying SUSFS patches..."
           
-          # ===> Тут будет у нас применяться susfs.
-          # ===> Эта часть должна пройти без проблем.
+          # Тут будет у нас применяться susfs.
+          # Эта часть должна пройти без проблем.
           cp ../../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./
           patch -p1 --forward < 50_add_susfs_in_gki-android14-6.1.patch
           cp ../../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
           
           echo "Applying SUSFS patches for KernelSU Next..."
-          # ===> Тут будет интегрировать сам susfs с KernelSU Next
-          cd ./KernelSU-Next
+          # Тут будет интегрировать сам susfs с KernelSU Next
 
-          # ===> Для начала применяю самый основной патч, он ожидаемо должен завершиться с ошибкой.
+          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+            cd ./KernelSU-Next
+          elif [ "${{ inputs.ksu_type }}" == "ksu" ]; then
+            cd ./KernelSU
+          fi
+
+          # Для начала применяю самый основной патч, он ожидаемо должен завершиться с ошибкой.
           echo "---> Apply main patch <---"
           cp ../../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
 
-          # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
-          echo "---> STARTED fix for apk_sign.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
-          patch -p1 --forward < fix_apk_sign.c.patch
-          
-          echo "---> STARTED fix for core_hook.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-          patch -p1 --forward < fix_core_hook.c.patch
-          
-          echo "---> STARTED fix for sucompat.c <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-          patch -p1 --forward < fix_sucompat.c.patch
-          
-          echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
-          cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-          patch -p1 --forward < fix_kernel_compat.c.patch
+          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+            # Применяю несколько мелких патчей к файлам к которым не мог применить основной патч.
+            echo "---> STARTED fix for apk_sign.c <---"
+            cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
+            patch -p1 --forward < fix_apk_sign.c.patch
+
+            echo "---> STARTED fix for core_hook.c <---"
+            cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+            patch -p1 --forward < fix_core_hook.c.patch
+
+            echo "---> STARTED fix for sucompat.c <---"
+            cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+            patch -p1 --forward < fix_sucompat.c.patch
+
+            echo "---> STARTED fix for fix_kernel_compat.c.patch <---"
+            cp ../../../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+            patch -p1 --forward < fix_kernel_compat.c.patch
+          fi
 
       - name: Get KernelSU Version
-        working-directory: kernel_source/aosp/KernelSU-Next
-        run: |
-          echo "Getting KernelSU version..."
-          
-          # ===> KernelSU Next определяет свою версию по количеству коммитов, это нам понадобиться в дальнйшей сборке.
+        working-directory: kernel_source/aosp
+        run: |          
+          if [ "${{ inputs.ksu_type}}" == "ksu-next" ]; then
+            cd ./KernelSU-Next
+          elif [ "${{ inputs.ksu_type }}" == "ksu" ]; then
+            cd ./KernelSU
+          fi
 
-          # ===> Базовая версия для подсчета
+          # KernelSU Next определяет свою версию по количеству коммитов.
+
+          # Базовая версия для подсчета
           BASE_VERSION=10200
           
-          # ===> Считаем коммиты в текущей директории и добавляем к базовой версии
-          KSU_VERSION=$(expr $(git rev-list --count HEAD) + $BASE_VERSION)
+          # Считаем коммиты в текущей директории и добавляем к базовой версии
+          KSUVER=$(expr $(git rev-list --count HEAD) + $BASE_VERSION)
           
-          echo "Detected KSUVER: $KSU_VERSION"
-          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
+          echo "Detected KSUVER: $KSUVER"
+          echo "KSUVER=$KSUVER" >> $GITHUB_ENV
           
       - name: Force KernelSU Driver Version
-        working-directory: kernel_source/aosp/KernelSU-Next/kernel
+        working-directory: kernel_source/aosp
         run: |
           echo "Forcing KSU Driver Version to ${KSUVER} in Makefile..."
 
-          # ===> Нужно вручную подменить номер версии, это лишь визуальная часть.
-          # ===> Во время сборки bazel он выполняет всё в песочнице и Makefile попросту не видит папки .git для подсчёта версии.
-          sed -i "s/ccflags-y += -DKSU_VERSION=11998/ccflags-y += -DKSU_VERSION=${KSUVER}/" Makefile
+          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+            cd ./KernelSU-Next/kernel
+            STATIC_VERSION=11998
+          elif [ "${{ inputs.ksu_type }}" == "ksu" ]; then
+            cd ./KernelSU/kernel
+            STATIC_VERSION=16
+          fi
+
+          # Нужно вручную подменить номер версии, это лишь визуальная часть.
+          # Во время сборки bazel он выполняет всё в песочнице и Makefile попросту не видит папки .git для подсчёта версии.
+          sed -i "s/ccflags-y += -DKSU_VERSION=${STATIC_VERSION}/ccflags-y += -DKSU_VERSION=${KSUVER}/" Makefile
 
           echo "Makefile patched successfully."
 
       - name: Apply Hooks Patches
         working-directory: kernel_source/aosp
         run: |
-          echo "Applying hooks for KernelSU-Next..."
-          # ===> Ещё один патч.
+          # Позволяет использовать manual hooks для ядра.
 
           cp ../../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
           patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
@@ -260,8 +277,6 @@ jobs:
         working-directory: kernel_source/aosp
         run: |
           cp ../../kernel_patches/69_hide_stuff.patch ./
-          # ===> Ещё один патч.
-
           patch -p1 --forward -F 3 < 69_hide_stuff.patch
 
       - name: Add Configuration Settings
@@ -269,7 +284,7 @@ jobs:
         run: |
           DEFCONFIG_PATH="../private/devices/google/"${{ inputs.device }}"/"${{ inputs.device }}"_defconfig"
 
-          # ===> Добавляем конфиги в defconfig устройства.
+          # Добавляем конфиги в defconfig устройства.
           echo "Adding configuration settings to defconfig..."
                     
           # Add KSU configuration settings
@@ -314,7 +329,7 @@ jobs:
           echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
 
           if [ "${{ inputs.susfs }}" == "true" ]; then
-            # ===> SUSFS Configs <===
+            # SUSFS Configs <===
             echo "Adding configuration settings to defconfig..."
 
             # Add SUSFS configuration settings
@@ -337,47 +352,45 @@ jobs:
             echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
           fi
 
-          # Remove check_defconfig
+          # Удаление проверки defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
 
       - name: Change Kernel Name
         working-directory: kernel_source
         run: |
-          set -ex
-          # ===> Удаляем надпись dirty из наименования ядра.
+          set -e
+          # Удаляем надпись dirty из наименования ядра.
           sed -i "s/echo -n -dirty/echo -n \"\"/g" build/kernel/kleaf/workspace_status_stamp.py
 
           TIMESTAMP=$(date -u +'\"%a %b %d %T %Z %Y\"')
-          echo "TIMEBUILD=$TIMESTAMP" >> $GITHUB_ENV
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
 
-          # ===> Добавляем свою метку в название ядра. 
+          # Добавляем свою метку в название ядра. 
           # sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
           sed -i "s/build-timestamp = \$(or \$(KBUILD_BUILD_TIMESTAMP), \$(build-timestamp-auto))/build-timestamp = ${TIMESTAMP}/" ./aosp/init/Makefile
 
       - name: Build Kernel
         working-directory: kernel_source
         run: |
-          ./build_shusky.sh --kernel_package=@//aosp
+          ./build_${{ inputs.device }}.sh --kernel_package=@//aosp
 
       - name: Prepare Artifacts for Packaging
         run: |
-          # ===> Директории для артефактов
-          ARTIFACT_DIR="kernel_source/out/shusky/dist"
+          # Директории для артефактов
+          ARTIFACT_DIR="kernel_source/out/${{ inputs.device }}/dist"
           ANYKERNEL_DIR="AnyKernel3"
           MKBOOTIMG_DIR="FilesForImg"
 
           echo "Preparing artifacts from $ARTIFACT_DIR"
         
-          # ===> Создаем обе целевые директории
+          # Создаем обе целевые директории
           mkdir -p "$ANYKERNEL_DIR"
-          # ===> Я создал папку MKBOOTIMG_DIR уже на этапе скачивания прошивки.
-          # mkdir -p "$MKBOOTIMG_DIR"
           
-          # ===> Подготовка для AnyKernel3
+          # Подготовка для AnyKernel3
           cp "$ARTIFACT_DIR/Image.lz4" "$ANYKERNEL_DIR/Image.lz4"
           cat "$ARTIFACT_DIR"/*.dtb > "$ANYKERNEL_DIR/dtb"
         
-          # ===> Подготовка для создания .img файлов
+          # Подготовка для создания .img файлов
           cp "$ARTIFACT_DIR/Image.lz4" "$MKBOOTIMG_DIR/assets"
           cat "$ARTIFACT_DIR"/*.dtb > "$MKBOOTIMG_DIR/assets/dtb"
 
@@ -388,8 +401,9 @@ jobs:
       - name: Create ZIP Files for Different Formats
         working-directory: AnyKernel3
         run: |
-          # Zip the files in the AnyKernel3 directory with a new naming convention
-          ZIP_NAME="zuma_A16_Stock_KSU_Next-v${KSUVER}_SUSFS.zip"
+          SUSFS_STAT="${{ inputs.susfs == 'true' && '_SUSFS-v1.5.9' || '' }}"
+
+          ZIP_NAME="${KERNEL_VER}_${{ inputs.device }}_${{ inputs.ksu_type }}-v${KSUVER}${SUSFS_STAT}.zip"
           echo "Creating zip file $ZIP_NAME..."
           zip -r "../$ZIP_NAME" ./*
 
@@ -398,51 +412,53 @@ jobs:
         run: |
           set -ex
 
+          SUSFS_STAT="${{ inputs.susfs == 'true' && '_SUSFS-v1.5.9' || '' }}"
+
           TOOLS_DIR="tools"
           ASSETS_DIR="assets"
           OUTPUT_DIR="output"
           TMP_DIR="tmp_build"
 
-          # ===> Получаем абсолютные пути, чтобы они работали после смены директории (cd)
+          # Получаем абсолютные пути, чтобы они работали после смены директории (cd)
           BASE_DIR="$PWD"
           MAGISKBOOT="$BASE_DIR/$TOOLS_DIR/magiskboot"
 
-          # ===> Подготовка
+          # Подготовка
           echo "Preparing workspace..."
           mkdir -p "$OUTPUT_DIR" "$TMP_DIR"
 
-          # ===> Пересборка boot.img
+          # Пересборка boot.img
           echo "==> Repacking boot.img..."
 
           cd "$TMP_DIR"
 
           "$MAGISKBOOT" unpack "$BASE_DIR/$ASSETS_DIR/boot.img"
           cp "$BASE_DIR/$ASSETS_DIR/Image.lz4" kernel
-          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/boot.img" "$BASE_DIR/$OUTPUT_DIR/boot_KernelSU-Next-v${KSUVER}_SUSFS.img"
+          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/boot.img" "$BASE_DIR/$OUTPUT_DIR/boot_${KERNEL_VER}_${{ inputs.device }}_${{ inputs.ksu_type }}-v${KSUVER}${SUSFS_STAT}.img"
           echo "boot_KernelSU-Next-v${KSUVER}_SUSFS.img created."
 
-          # ===> Возвращаемся в основную директорию проекта
+          # Возвращаемся в основную директорию проекта
           cd "$BASE_DIR"
 
-          # ===> Пересборка vendor_kernel_boot.img
+          # Пересборка vendor_kernel_boot.img
           echo "Repacking vendor_kernel_boot.img..."
 
-          # ===> Снова переходим во временную директорию очистив ее от файлов boot.img
+          # Снова переходим во временную директорию очистив ее от файлов boot.img
           rm -rf $TMP_DIR/*
           cd "$TMP_DIR"
 
           "$MAGISKBOOT" unpack "$BASE_DIR/$ASSETS_DIR/vendor_kernel_boot.img"
           cp "$BASE_DIR/$ASSETS_DIR/dtb" dtb
-          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/vendor_kernel_boot.img" "$BASE_DIR/$OUTPUT_DIR/vendor_kernel_boot_KernelSU-Next-v${KSUVER}_SUSFS.img"
+          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/vendor_kernel_boot.img" "$BASE_DIR/$OUTPUT_DIR/vendor_kernel_boot_${KERNEL_VER}_${{ inputs.device }}_${{ inputs.ksu_type }}-v${KSUVER}${SUSFS_STAT}.img"
           echo "vendor_kernel_boot_KernelSU-Next-v${KSUVER}_SUSFS.img created."
 
-          # ===> Возвращаемся в основную директорию проекта
+          # Возвращаемся в основную директорию проекта
           cd "$BASE_DIR"
 
           echo "==> Cleaning up..."
           rm -rf "$TMP_DIR"
 
-          cp ${OUTPUT_DIR}/*_KernelSU-Next-v${KSUVER}_SUSFS.img -d ../
+          cp ${OUTPUT_DIR}/*.img -d ../
 
           echo "---> Build finished successfully. <---"
 
@@ -459,7 +475,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AnyKernel-ZIP
-          path: zuma_*.zip
+          path: *.zip
 
       - name: Upload boot.img Artifact
         uses: actions/upload-artifact@v4
@@ -481,39 +497,40 @@ jobs:
           folder: ${{ github.workspace }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  create-release:
-    needs: build-pixel-kernel
-    runs-on: ubuntu-latest
-    if: github.event.inputs.make_release == 'true'
-
-    steps:
-      - name: Download All Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-assets 
-
-      - name: Prepare Release Variables
-        id: release_vars
-        run: |
-          ZIP_FILE=$(find ./release-assets -name '*.zip')
-          KSU_VERSION=$(echo "$ZIP_FILE" | grep -oP '(?<=Next-v)\d+')
-          TAG_NAME="ksu-${KSU_VERSION}-$(date +'%Y%m%d-%H%M')"
-          
-          echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
-          echo "ksu_ver=${KSU_VERSION}" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.release_vars.outputs.tag }}
-          name: "KernelSU Next ${{ steps.release_vars.outputs.ksu_ver }} + SUSFS for Pixel 8/8 Pro"
-          body: |
-            ### Features
-            - KernelSU Next version: ${{ steps.release_vars.outputs.ksu_ver }}
-            - SUSFS version: 1.5.9
-            - Based on the pure stock Google kernel.
-            - Supports both AnyKernel3 ZIP installation and direct .img flashing via fastboot (.img compress in .gz).
-            
-            **Built transparently via GitHub Actions.**
-          files: release-assets/**/*
-          prerelease: false
+#  create-release:
+#    needs: build-pixel-kernel
+#    runs-on: ubuntu-latest
+#    if: github.event.inputs.make_release == 'true'
+#
+#    steps:
+#      - name: Download All Build Artifacts
+#        uses: actions/download-artifact@v4
+#        with:
+#          path: release-assets 
+#
+#      - name: Prepare Release Variables
+#        id: release_vars
+#        run: |
+#          ZIP_FILE=$(find ./release-assets -name '*.zip')
+#          KSU_VERSION=$(echo "$ZIP_FILE" | grep -oP '(?<=Next-v)\d+')
+#          TAG_NAME="ksu-${KSU_VERSION}-$(date +'%Y%m%d-%H%M')"
+#          
+#          echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
+#          echo "ksu_ver=${KSU_VERSION}" >> $GITHUB_OUTPUT
+#
+#      - name: Create GitHub Release
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: ${{ steps.release_vars.outputs.tag }}
+#          name: "KernelSU Next ${{ steps.release_vars.outputs.ksu_ver }} + SUSFS for Pixel 8/8 Pro"
+#          body: |
+#            ### Features
+#            - KernelSU Next version: ${{ steps.release_vars.outputs.ksu_ver }}
+#            - SUSFS version: 1.5.9
+#            - Based on the pure stock Google kernel.
+#            - Supports both AnyKernel3 ZIP installation and direct .img flashing via fastboot (.img compress in .gz).
+#            
+#            **Built transparently via GitHub Actions.**
+#          files: release-assets/**/*
+#          prerelease: false
+#
