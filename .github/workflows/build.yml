@@ -11,10 +11,10 @@ on:
         type: string
       susfs:
         required: true
-        type: boolean
+        type: string
       make_release:
         required: true
-        type: boolean
+        type: string
       stock_ota:
         required: true
         type: string
