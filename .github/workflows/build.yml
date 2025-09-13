@@ -492,14 +492,22 @@ jobs:
       - name: Upload AnyKernel ZIP Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AK3_${KERNEL_VER}_${{ inputs.device }}_${{ inputs.ksu_type }}-v${KSUVER}${SUSFS_STAT}${{ inputs.hooks_type }}.zip"
+          name: AK3_${KERNEL_VER}_shusky_ksu-next-v${KSUVER}${SUSFS_STAT}manual.zip
           path: AK3*.zip
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false
 
       - name: Upload boot.img Artifact
         uses: actions/upload-artifact@v4
         with:
           name: boot_${KERNEL_VER}_${{ inputs.device }}_${{ inputs.ksu_type }}-v${KSUVER}${SUSFS_STAT}${{ inputs.hooks_type }}.img
           path: boot_*.img.gz
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false
 
 #      - name: Upload vendor_kernel_boot.img Artifact
 #        uses: actions/upload-artifact@v4
