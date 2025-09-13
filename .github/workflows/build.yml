@@ -290,6 +290,7 @@ jobs:
       - name: Add Configuration Settings
         working-directory: kernel_source/aosp
         run: |
+          set -ex
           DEFCONFIG_PATH="../private/devices/google/${{ inputs.device }}/${{ inputs.device }}_defconfig"
 
           # Добавляем конфиги в defconfig устройства.

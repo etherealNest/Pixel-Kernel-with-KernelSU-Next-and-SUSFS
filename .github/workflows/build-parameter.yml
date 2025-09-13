@@ -54,8 +54,8 @@ on:
         type: choice
         options:
           - manual
-          - kbrobes
-        default: kbrobes
+          - kprobes
+        default: kprobes
       run_type:
         description: 'Run Type'
         required: true
@@ -87,7 +87,7 @@ jobs:
       matrix:
         ksu_type: [ksu-next, ksu]
         susfs: [true, false]
-        hooks_type: [manual, kbrobes]
+        hooks_type: [manual, kprobes]
         exclude:
           # Запрещаем комбинацию ksu + manual
           - ksu_type: ksu
