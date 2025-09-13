@@ -238,14 +238,12 @@ jobs:
           
       - name: Force KernelSU Driver Version
         working-directory: kernel_source/aosp/KernelSU-Next/kernel
-        env:
-          KSUVER_NUM: ${{ env.KSUVER }}
         run: |
-          echo "Forcing KSU Driver Version to ${KSUVER_NUM} in Makefile..."
+          echo "Forcing KSU Driver Version to ${KSUVER} in Makefile..."
 
           # ===> Нужно вручную подменить номер версии, это лишь визуальная часть.
           # ===> Во время сборки bazel он выполняет всё в песочнице и Makefile попросту не видит папки .git для подсчёта версии.
-          sed -i "s/ccflags-y += -DKSU_VERSION=11998/ccflags-y += -DKSU_VERSION=${KSUVER_NUM}/" Makefile
+          sed -i "s/ccflags-y += -DKSU_VERSION=11998/ccflags-y += -DKSU_VERSION=${KSUVER}/" Makefile
 
           echo "Makefile patched successfully."
 
@@ -344,8 +342,6 @@ jobs:
 
       - name: Change Kernel Name
         working-directory: kernel_source
-        env:
-          KSUVER_NUM: ${{ env.KSUVER }}
         run: |
           set -ex
           # ===> Удаляем надпись dirty из наименования ядра.
@@ -355,7 +351,7 @@ jobs:
           echo "TIMEBUILD=$TIMESTAMP" >> $GITHUB_ENV
 
           # ===> Добавляем свою метку в название ядра. 
-          # sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER_NUM}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
+          # sed -i "\$s|echo \"\$res\"|echo \"\$res-NEXT-v${KSUVER}-SUSFS-v1.5.9\"|" ./aosp/scripts/setlocalversion
           sed -i "s/build-timestamp = \$(or \$(KBUILD_BUILD_TIMESTAMP), \$(build-timestamp-auto))/build-timestamp = ${TIMESTAMP}/" ./aosp/init/Makefile
 
       - name: Build Kernel
@@ -391,18 +387,14 @@ jobs:
 
       - name: Create ZIP Files for Different Formats
         working-directory: AnyKernel3
-        env:
-          KSUVER_NUM: ${{ env.KSUVER }}
         run: |
           # Zip the files in the AnyKernel3 directory with a new naming convention
-          ZIP_NAME="zuma_A16_Stock_KSU_Next-v${KSUVER_NUM}_SUSFS.zip"
+          ZIP_NAME="zuma_A16_Stock_KSU_Next-v${KSUVER}_SUSFS.zip"
           echo "Creating zip file $ZIP_NAME..."
           zip -r "../$ZIP_NAME" ./*
 
       - name: Build boot.img and vendor_kernel_boot.img
         working-directory: FilesForImg
-        env:
-          KSUVER_NUM: ${{ env.KSUVER }}
         run: |
           set -ex
 
@@ -426,8 +418,8 @@ jobs:
 
           "$MAGISKBOOT" unpack "$BASE_DIR/$ASSETS_DIR/boot.img"
           cp "$BASE_DIR/$ASSETS_DIR/Image.lz4" kernel
-          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/boot.img" "$BASE_DIR/$OUTPUT_DIR/boot_KernelSU-Next-v${KSUVER_NUM}_SUSFS.img"
-          echo "boot_KernelSU-Next-v${KSUVER_NUM}_SUSFS.img created."
+          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/boot.img" "$BASE_DIR/$OUTPUT_DIR/boot_KernelSU-Next-v${KSUVER}_SUSFS.img"
+          echo "boot_KernelSU-Next-v${KSUVER}_SUSFS.img created."
 
           # ===> Возвращаемся в основную директорию проекта
           cd "$BASE_DIR"
@@ -441,8 +433,8 @@ jobs:
 
           "$MAGISKBOOT" unpack "$BASE_DIR/$ASSETS_DIR/vendor_kernel_boot.img"
           cp "$BASE_DIR/$ASSETS_DIR/dtb" dtb
-          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/vendor_kernel_boot.img" "$BASE_DIR/$OUTPUT_DIR/vendor_kernel_boot_KernelSU-Next-v${KSUVER_NUM}_SUSFS.img"
-          echo "vendor_kernel_boot_KernelSU-Next-v${KSUVER_NUM}_SUSFS.img created."
+          "$MAGISKBOOT" repack "$BASE_DIR/$ASSETS_DIR/vendor_kernel_boot.img" "$BASE_DIR/$OUTPUT_DIR/vendor_kernel_boot_KernelSU-Next-v${KSUVER}_SUSFS.img"
+          echo "vendor_kernel_boot_KernelSU-Next-v${KSUVER}_SUSFS.img created."
 
           # ===> Возвращаемся в основную директорию проекта
           cd "$BASE_DIR"
@@ -450,7 +442,7 @@ jobs:
           echo "==> Cleaning up..."
           rm -rf "$TMP_DIR"
 
-          cp ${OUTPUT_DIR}/*_KernelSU-Next-v${KSUVER_NUM}_SUSFS.img -d ../
+          cp ${OUTPUT_DIR}/*_KernelSU-Next-v${KSUVER}_SUSFS.img -d ../
 
           echo "---> Build finished successfully. <---"
 
