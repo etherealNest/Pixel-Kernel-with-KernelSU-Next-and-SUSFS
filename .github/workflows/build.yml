@@ -290,7 +290,6 @@ jobs:
       - name: Add Configuration Settings
         working-directory: kernel_source/aosp
         run: |
-          set -ex
           DEFCONFIG_PATH="../private/devices/google/${{ inputs.device }}/${{ inputs.device }}_defconfig"
 
           # Добавляем конфиги в defconfig устройства.
@@ -367,6 +366,9 @@ jobs:
             echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
             echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
           fi
+
+          echo "Showing updated defconfig:"
+          cat "${DEFCONFIG_PATH}"
 
           # Удаление проверки defconfig
           sed -i 's/check_defconfig//' ./build.config.gki
