@@ -174,7 +174,7 @@ jobs:
         run: |
           set -e
           
-          if [ "${{ inputs.ksu_type}} " == "ksu-next" ]; then
+          if [ "${{ inputs.ksu_type}}" == "ksu-next" ]; then
             echo "Adding KernelSU Next"
             curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
           else
