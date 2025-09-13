@@ -51,7 +51,7 @@ on:
 
 jobs:
   build-kernel:
-    uses: ./.github/workflows/build-kernel.yml
+    uses: ./.github/workflows/build.yml
     with:
       device: ${{ github.event.inputs.device }}
       ksu_type: ${{ github.event.inputs.ksu_type }}
